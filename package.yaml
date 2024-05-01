@@ -25,6 +25,8 @@ dependencies:
 - bytestring
 - containers
 - http-types
+- iam-mtaylor-io-client
+- iam-mtaylor-io-core
 - lens
 - mtl
 - network

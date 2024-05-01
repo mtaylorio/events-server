@@ -3,6 +3,8 @@ module State
   ( State(..)
   , initState
   , insertClient
+  , joinGroup
+  , leaveGroup
   ) where
 
 import Control.Concurrent.STM
@@ -32,3 +34,13 @@ insertClient state client = do
   return clientVar
   where
   modifyGroups clientVar = fromList $ fmap (, [clientVar]) (unClientGroups client)
+
+
+joinGroup :: State -> UUID -> TVar Client -> STM ()
+joinGroup state group client = do
+  modifyTVar' (unStateGroups state) $ insertWith (++) group [client]
+
+
+leaveGroup :: State -> UUID -> TVar Client -> STM ()
+leaveGroup state group client = do
+  modifyTVar' (unStateGroups state) $ adjust (Prelude.filter (/= client)) group

@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Client
+      Event
       Message
       Recipient
       Server
@@ -44,6 +45,8 @@ library
     , bytestring
     , containers
     , http-types
+    , iam-mtaylor-io-client
+    , iam-mtaylor-io-core
     , lens
     , mtl
     , network
@@ -73,6 +76,8 @@ executable events-mtaylor-io-exe
     , containers
     , events-mtaylor-io
     , http-types
+    , iam-mtaylor-io-client
+    , iam-mtaylor-io-core
     , lens
     , mtl
     , network
@@ -103,6 +108,8 @@ test-suite events-mtaylor-io-test
     , containers
     , events-mtaylor-io
     , http-types
+    , iam-mtaylor-io-client
+    , iam-mtaylor-io-core
     , lens
     , mtl
     , network
