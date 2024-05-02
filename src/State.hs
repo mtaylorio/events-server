@@ -3,6 +3,7 @@ module State
   ( State(..)
   , initState
   , insertClient
+  , removeClient
   , joinGroup
   , leaveGroup
   ) where
@@ -34,6 +35,17 @@ insertClient state client = do
   return clientVar
   where
   modifyGroups clientVar = fromList $ fmap (, [clientVar]) (unClientGroups client)
+
+
+removeClient :: State -> TVar Client -> STM ()
+removeClient state client = do
+  client' <- readTVar client
+  modifyTVar' (unStateUsers state) $ modifyUsers client'
+  modifyTVar' (unStateGroups state) $ modifyGroups client'
+  modifyTVar' (unStateSessions state) $ delete (unClientSession client')
+  where
+  modifyUsers client' = adjust (Prelude.filter (/= client)) (unClientUser client')
+  modifyGroups client' = adjust (Prelude.filter (/= client)) (unClientUser client')
 
 
 joinGroup :: State -> UUID -> TVar Client -> STM ()

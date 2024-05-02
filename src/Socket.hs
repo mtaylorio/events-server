@@ -3,11 +3,9 @@ module Socket
   ) where
 
 import Control.Concurrent.STM
-import Control.Exception (throwIO)
+import Control.Exception (catch, throwIO)
 import Data.Aeson
-import Data.ByteString.Lazy (fromStrict)
 import Data.Foldable (forM_)
-import Data.Text.Encoding (encodeUtf8)
 import Data.UUID (UUID)
 import qualified Data.Map.Strict as M
 import qualified Network.WebSockets as WS
@@ -22,17 +20,21 @@ import State
 websocketHandler :: State -> WS.PendingConnection -> IO ()
 websocketHandler state pending = do
   (client, conn) <- websocketHandshake state pending
-  websocketLoop state client conn
+  catch (websocketLoop state client conn) (onException client)
+  where
+  onException client e = do
+    putStrLn $ "Exception: " ++ show (e :: WS.ConnectionException)
+    atomically $ removeClient state client
 
 
 websocketHandshake :: State -> WS.PendingConnection -> IO (TVar Client, WS.Connection)
 websocketHandshake state pending = do
   conn <- WS.acceptRequest pending
   putStrLn "WebSocket connection established"
-  clientHelloMessage <- WS.receiveData conn
-  case decode $ fromStrict $ encodeUtf8 clientHelloMessage of
-    Just hello -> do
-      client <- atomically $ insertClient state $ newClient conn hello
+  clientHelloBytes <- WS.receiveData conn
+  case decode clientHelloBytes of
+    Just clientHello -> do
+      client <- atomically $ insertClient state $ newClient conn clientHello
       return (client, conn)
     Nothing ->
       throwIO $ userError "Expected a ClientHello message"
@@ -40,8 +42,8 @@ websocketHandshake state pending = do
 
 websocketLoop :: State -> TVar Client -> WS.Connection -> IO ()
 websocketLoop state client conn = do
-  evtText <- WS.receiveData conn
-  case decode $ fromStrict $ encodeUtf8 evtText of
+  evtBytes <- WS.receiveData conn
+  case decode evtBytes of
     Just evt ->
       case evt of
         EventJoinGroup group -> do
