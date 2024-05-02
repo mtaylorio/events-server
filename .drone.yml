@@ -65,14 +65,14 @@ steps:
   image: images.home.mtaylor.io/deployer:latest
   commands:
   - set -eux
+  - git fetch origin --tags
   - ./bin/version.sh $(get-release-tag)
-  when:
-    event:
-    - tag
 - name: release
   image: images.home.mtaylor.io/deployer:latest
   commands:
-  - ./bin/promote.sh
+  - set -eux
+  - git fetch origin --tags
+  - ./bin/promote.sh $(get-release-tag)
 trigger:
   event:
   - promote
