@@ -12,8 +12,10 @@ steps:
     password: anonymous
     registry: images.home.mtaylor.io
     tags:
-    - ${DRONE_COMMIT_BRANCH}
+    - main
 trigger:
+  branch:
+  - main
   event:
   - push
 ---
@@ -21,14 +23,6 @@ kind: pipeline
 type: kubernetes
 name: release
 steps:
-- name: version
-  image: images.home.mtaylor.io/base:latest
-  commands:
-  - set -eux
-  - ./bin/version.sh $DRONE_TAG
-  when:
-    event:
-    - tag
 - name: image
   image: images.home.mtaylor.io/drone-kaniko:latest
   settings:
@@ -67,6 +61,14 @@ kind: pipeline
 type: kubernetes
 name: promote
 steps:
+- name: version
+  image: images.home.mtaylor.io/deployer:latest
+  commands:
+  - set -eux
+  - ./bin/version.sh $(get-release-tag)
+  when:
+    event:
+    - tag
 - name: release
   image: images.home.mtaylor.io/deployer:latest
   commands:
