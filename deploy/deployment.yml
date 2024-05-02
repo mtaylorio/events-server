@@ -19,6 +19,11 @@ spec:
             configMapKeyRef:
               name: events-mtaylor-io
               key: public-key
+        - name: MTAYLOR_IO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: events-mtaylor-io
+              key: secret-key
         ports:
         - name: http
           protocol: TCP
