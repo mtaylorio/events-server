@@ -57,7 +57,7 @@ library:
   source-dirs: src
 
 executables:
-  events-mtaylor-io-exe:
+  events-mtaylor-io:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

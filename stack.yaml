@@ -42,7 +42,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
-  commit: 389aaf13e4b6a23d6e8b5332c9a71ef430f0f071
+  commit: 566fecd7ed188d651e3d424f5ac176fe50c997bd
 - git: https://github.com/mtaylor91/iam-mtaylor-io-core.git
   commit: 5170f864eda0b561b22a0e53137fab9c59f97daa
 

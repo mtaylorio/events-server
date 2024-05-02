@@ -63,7 +63,7 @@ library
     , websockets
   default-language: Haskell2010
 
-executable events-mtaylor-io-exe
+executable events-mtaylor-io
   main-is: Main.hs
   other-modules:
       Paths_events_mtaylor_io
