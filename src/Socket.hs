@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Socket
   ( websocketHandler
   ) where
@@ -6,9 +7,16 @@ import Control.Concurrent.STM
 import Control.Exception (catch, throwIO)
 import Data.Aeson
 import Data.Foldable (forM_)
+import Data.Text (Text)
 import Data.UUID (UUID)
 import qualified Data.Map.Strict as M
 import qualified Network.WebSockets as WS
+import qualified Servant.Client as SC
+
+import IAM.Authorization
+import IAM.Client
+import IAM.Policy (Action(Read))
+import IAM.UserIdentifier
 
 import Client
 import Event
@@ -34,8 +42,25 @@ websocketHandshake state pending = do
   clientHelloBytes <- WS.receiveData conn
   case decode clientHelloBytes of
     Just clientHello -> do
-      client <- atomically $ insertClient state $ newClient conn clientHello
-      return (client, conn)
+      let uid = UserUUID $ unClientHelloUser clientHello
+          uident = UserIdentifier (Just uid) Nothing Nothing
+          client = authorizeClient $ AuthorizationRequest
+            { authorizationRequestUser = uident
+            , authorizationRequestHost = unStateHost state
+            , authorizationRequestAction = Read
+            , authorizationRequestResource = "/"
+            , authorizationRequestToken = Just $ unClientHelloToken clientHello
+            }
+      result <- SC.runClientM client (unStateClientEnv state)
+      case result of
+        Left err -> do
+          putStrLn $ "Authorization failed: " ++ show err
+          WS.sendClose conn ("Authorization failed" :: Text)
+          throwIO $ userError "Authorization failed"
+        Right _ -> do
+          putStrLn "Authorization succeeded"
+          client' <- atomically $ insertClient state $ newClient conn clientHello
+          return (client', conn)
     Nothing ->
       throwIO $ userError "Expected a ClientHello message"
 

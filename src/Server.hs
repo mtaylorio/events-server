@@ -4,11 +4,17 @@ module Server
   ) where
 
 import Control.Concurrent.STM (atomically)
+import Network.HTTP.Client
+import Network.HTTP.Client.TLS
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Handler.WebSockets as WaiWS
 import qualified Network.WebSockets as WS
+import qualified Servant.Client as SC
+
+import IAM.Client.Auth
+import IAM.Client.Util
 
 import Socket (websocketHandler)
 import State (initState, State)
@@ -24,6 +30,10 @@ app state req respond =
 
 runServer :: IO ()
 runServer = do
-  state <- atomically initState
+  url <- serverUrl
+  auth <- clientAuthInfo
+  mgr <- newManager tlsManagerSettings { managerModifyRequest = clientAuth auth }
+  state <- atomically $ initState "localhost" $ SC.mkClientEnv mgr url
+
   putStrLn "Starting server on http://localhost:8080"
   Warp.run 8080 $ app state

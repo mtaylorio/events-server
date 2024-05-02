@@ -24,6 +24,8 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - containers
+- http-client
+- http-client-tls
 - http-types
 - iam-mtaylor-io-client
 - iam-mtaylor-io-core
@@ -31,6 +33,7 @@ dependencies:
 - mtl
 - network
 - optparse-applicative
+- servant-client
 - stm
 - text
 - uuid

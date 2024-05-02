@@ -44,6 +44,8 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , http-client
+    , http-client-tls
     , http-types
     , iam-mtaylor-io-client
     , iam-mtaylor-io-core
@@ -51,6 +53,7 @@ library
     , mtl
     , network
     , optparse-applicative
+    , servant-client
     , stm
     , text
     , uuid
@@ -75,6 +78,8 @@ executable events-mtaylor-io-exe
     , bytestring
     , containers
     , events-mtaylor-io
+    , http-client
+    , http-client-tls
     , http-types
     , iam-mtaylor-io-client
     , iam-mtaylor-io-core
@@ -82,6 +87,7 @@ executable events-mtaylor-io-exe
     , mtl
     , network
     , optparse-applicative
+    , servant-client
     , stm
     , text
     , uuid
@@ -107,6 +113,8 @@ test-suite events-mtaylor-io-test
     , bytestring
     , containers
     , events-mtaylor-io
+    , http-client
+    , http-client-tls
     , http-types
     , iam-mtaylor-io-client
     , iam-mtaylor-io-core
@@ -114,6 +122,7 @@ test-suite events-mtaylor-io-test
     , mtl
     , network
     , optparse-applicative
+    , servant-client
     , stm
     , text
     , uuid

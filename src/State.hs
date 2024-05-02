@@ -10,20 +10,25 @@ module State
 
 import Control.Concurrent.STM
 import Data.Map.Strict
+import Data.Text (Text)
 import Data.UUID (UUID)
+import qualified Servant.Client as SC
 
 import Client
 
 
 data State = State
-  { unStateUsers :: !(TVar (Map UUID [TVar Client]))
+  { unStateHost :: !Text
+  , unStateClientEnv :: !SC.ClientEnv
+  , unStateUsers :: !(TVar (Map UUID [TVar Client]))
   , unStateGroups :: !(TVar (Map UUID [TVar Client]))
   , unStateSessions :: !(TVar (Map UUID (TVar Client)))
   }
 
 
-initState :: STM State
-initState = State <$> newTVar empty <*> newTVar empty <*> newTVar empty
+initState :: Text -> SC.ClientEnv -> STM State
+initState host clientEnv =
+  State host clientEnv <$> newTVar empty <*> newTVar empty <*> newTVar empty
 
 
 insertClient :: State -> Client -> STM (TVar Client)
