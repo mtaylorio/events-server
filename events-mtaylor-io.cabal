@@ -28,6 +28,7 @@ library
       Client
       Config
       Event
+      Handlers
       Message
       Recipient
       Server

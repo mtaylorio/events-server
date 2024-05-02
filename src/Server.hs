@@ -3,7 +3,8 @@ module Server
   ( runServer
   ) where
 
-import Control.Concurrent.STM (atomically)
+import Control.Concurrent (forkIO)
+import Control.Concurrent.STM
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import qualified Network.HTTP.Types as HTTP
@@ -37,5 +38,15 @@ runServer = do
   mgr <- newManager tlsManagerSettings { managerModifyRequest = clientAuth auth }
   state <- atomically $ initState hostname $ SC.mkClientEnv mgr url
 
+  done <- newEmptyTMVarIO
+  _ <- forkIO $ runServerWithState state done
+  _ <- atomically $ takeTMVar done
+
+  atomically $ takeTMVar done
+
+
+runServerWithState :: State -> TMVar () -> IO ()
+runServerWithState state done = do
   putStrLn "Starting server on http://localhost:8080"
   Warp.run 8080 $ app state
+  atomically $ putTMVar done ()
