@@ -9,11 +9,11 @@ spec:
       - name: events
         image: images.home.mtaylor.io/events-mtaylor-io
         env:
-        - name: MTAYLOR_IO_EMAIL
+        - name: MTAYLOR_IO_USERNAME
           valueFrom:
             configMapKeyRef:
               name: events-mtaylor-io
-              key: email
+              key: username
         - name: MTAYLOR_IO_PUBLIC_KEY
           valueFrom:
             configMapKeyRef:
