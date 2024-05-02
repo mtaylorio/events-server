@@ -12,9 +12,9 @@ import Message
 
 
 data Event
-  = EventMessage Message
-  | EventJoinGroup UUID
-  | EventLeaveGroup UUID
+  = EventMessage !Message
+  | EventJoinGroup !UUID
+  | EventLeaveGroup !UUID
 
 
 instance FromJSON Event where

@@ -15,9 +15,9 @@ import Client
 
 
 data State = State
-  { unStateUsers :: TVar (Map UUID [TVar Client])
-  , unStateGroups :: TVar (Map UUID [TVar Client])
-  , unStateSessions :: TVar (Map UUID (TVar Client))
+  { unStateUsers :: !(TVar (Map UUID [TVar Client]))
+  , unStateGroups :: !(TVar (Map UUID [TVar Client]))
+  , unStateSessions :: !(TVar (Map UUID (TVar Client)))
   }
 
 

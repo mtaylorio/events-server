@@ -9,9 +9,9 @@ import Data.UUID (UUID)
 
 
 data Recipient
-  = UserRecipient UUID
-  | GroupRecipient UUID
-  | SessionRecipient UUID
+  = UserRecipient !UUID
+  | GroupRecipient !UUID
+  | SessionRecipient !UUID
   deriving (Eq, Show)
 
 

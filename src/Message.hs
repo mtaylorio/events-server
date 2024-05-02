@@ -10,8 +10,8 @@ import Recipient
 
 
 data Message = Message
-  { unMessageValue :: KM.KeyMap Value
-  , unMessageRecipient :: Recipient
+  { unMessageValue :: !(KM.KeyMap Value)
+  , unMessageRecipient :: !Recipient
   } deriving (Eq, Show)
 
 

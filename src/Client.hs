@@ -12,18 +12,18 @@ import qualified Network.WebSockets as WS
 
 
 data Client = Client
-  { unClientConn :: WS.Connection
-  , unClientUser :: UUID
-  , unClientGroups :: [UUID]
-  , unClientSession :: UUID
-  , unClientToken :: Text
+  { unClientConn :: !WS.Connection
+  , unClientUser :: !UUID
+  , unClientGroups :: ![UUID]
+  , unClientSession :: !UUID
+  , unClientToken :: !Text
   }
 
 
 data ClientHello = ClientHello
-  { unClientHelloUser :: UUID
-  , unClientHelloSession :: UUID
-  , unClientHelloToken :: Text
+  { unClientHelloUser :: !UUID
+  , unClientHelloSession :: !UUID
+  , unClientHelloToken :: !Text
   } deriving (Eq, Show)
 
 
