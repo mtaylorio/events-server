@@ -7,3 +7,6 @@ commonLabels:
 resources:
 - deployment.yml
 - service.yml
+images:
+- name: images.home.mtaylor.io/events-mtaylor-io
+  newTag: 0.0.1
