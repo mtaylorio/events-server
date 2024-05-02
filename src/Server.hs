@@ -16,6 +16,7 @@ import qualified Servant.Client as SC
 import IAM.Client.Auth
 import IAM.Client.Util
 
+import Config (getHost)
 import Socket (websocketHandler)
 import State (initState, State)
 
@@ -32,8 +33,9 @@ runServer :: IO ()
 runServer = do
   url <- serverUrl
   auth <- clientAuthInfo
+  hostname <- getHost
   mgr <- newManager tlsManagerSettings { managerModifyRequest = clientAuth auth }
-  state <- atomically $ initState "localhost" $ SC.mkClientEnv mgr url
+  state <- atomically $ initState hostname $ SC.mkClientEnv mgr url
 
   putStrLn "Starting server on http://localhost:8080"
   Warp.run 8080 $ app state

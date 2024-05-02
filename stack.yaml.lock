@@ -5,15 +5,15 @@
 
 packages:
 - completed:
-    commit: 389aaf13e4b6a23d6e8b5332c9a71ef430f0f071
+    commit: 566fecd7ed188d651e3d424f5ac176fe50c997bd
     git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
     name: iam-mtaylor-io-client
     pantry-tree:
-      sha256: aaf655fa9ddbdb9852610e8563e7c0723ad8d55e06ff4d97a49b5b87d21f878f
+      sha256: 09fadaaedd0dff0711c82904129f0156f83f6bcb97d7f7a95b00fe2ca30239e6
       size: 2621
     version: 0.1.0.0
   original:
-    commit: 389aaf13e4b6a23d6e8b5332c9a71ef430f0f071
+    commit: 566fecd7ed188d651e3d424f5ac176fe50c997bd
     git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
 - completed:
     commit: 5170f864eda0b561b22a0e53137fab9c59f97daa
