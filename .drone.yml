@@ -1,0 +1,78 @@
+---
+kind: pipeline
+type: kubernetes
+name: build
+steps:
+- name: image
+  image: images.home.mtaylor.io/drone-kaniko:latest
+  settings:
+    repo: images.home.mtaylor.io/events-mtaylor-io
+    enable_cache: true
+    username: anonymous
+    password: anonymous
+    registry: images.home.mtaylor.io
+    tags:
+    - ${DRONE_COMMIT_BRANCH}
+trigger:
+  event:
+  - push
+---
+kind: pipeline
+type: kubernetes
+name: release
+steps:
+- name: version
+  image: images.home.mtaylor.io/base:latest
+  commands:
+  - set -eux
+  - ./bin/version.sh $DRONE_TAG
+  when:
+    event:
+    - tag
+- name: image
+  image: images.home.mtaylor.io/drone-kaniko:latest
+  settings:
+    repo: images.home.mtaylor.io/events-mtaylor-io
+    auto_tag: true
+    enable_cache: true
+    username: anonymous
+    password: anonymous
+    registry: images.home.mtaylor.io
+- name: deploy
+  image: images.home.mtaylor.io/deployer:0.0.7
+  commands:
+  - set -u
+  - pwd
+  - whoami
+  - mkdir -p ~/.ssh
+  - echo -n "$SSH_KEY_BASE64" | base64 --decode > ~/.ssh/id_ed25519
+  - chmod 0600 ~/.ssh/id_ed25519
+  - ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+  - git clone git@github.com:mtaylor91/argocd-deployment.git
+  - cd argocd-deployment
+  - ./bin/update-repo-tag.sh home/namespaced/mtaylor-io events-mtaylor-io $DRONE_TAG
+  - git commit -a -m "Update events-mtaylor-io to $DRONE_TAG"
+  - git push origin main
+  environment:
+    SSH_KEY_BASE64:
+      from_secret: ssh_key_base64
+  when:
+    event:
+    - tag
+trigger:
+  event:
+  - tag
+---
+kind: pipeline
+type: kubernetes
+name: promote
+steps:
+- name: release
+  image: images.home.mtaylor.io/deployer:latest
+  commands:
+  - ./bin/promote.sh
+trigger:
+  event:
+  - promote
+  target:
+  - production

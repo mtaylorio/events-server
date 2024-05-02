@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: events-mtaylor-io
+spec:
+  template:
+    spec:
+      containers:
+      - name: events
+        image: images.home.mtaylor.io/events-mtaylor-io
+        env:
+        - name: MTAYLOR_IO_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: email
+        - name: MTAYLOR_IO_PUBLIC_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: public-key
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 8080
+        readinessProbe:
+          periodSeconds: 5
+          failureThreshold: 3
+          successThreshold: 3
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          tcpSocket:
+            port: http
