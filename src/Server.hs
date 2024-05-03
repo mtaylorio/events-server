@@ -7,6 +7,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.STM
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
+import Network.Wai.Middleware.RequestLogger
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
@@ -48,5 +49,5 @@ runServer = do
 runServerWithState :: State -> TMVar () -> IO ()
 runServerWithState state done = do
   putStrLn "Starting server on http://localhost:8080"
-  Warp.run 8080 $ app state
+  Warp.run 8080 $ logStdout $ app state
   atomically $ putTMVar done ()

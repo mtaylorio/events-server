@@ -38,6 +38,7 @@ dependencies:
 - text
 - uuid
 - wai
+- wai-extra
 - wai-websockets
 - warp
 - websockets

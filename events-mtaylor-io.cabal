@@ -60,6 +60,7 @@ library
     , text
     , uuid
     , wai
+    , wai-extra
     , wai-websockets
     , warp
     , websockets
@@ -94,6 +95,7 @@ executable events-mtaylor-io
     , text
     , uuid
     , wai
+    , wai-extra
     , wai-websockets
     , warp
     , websockets
@@ -129,6 +131,7 @@ test-suite events-mtaylor-io-test
     , text
     , uuid
     , wai
+    , wai-extra
     , wai-websockets
     , warp
     , websockets
