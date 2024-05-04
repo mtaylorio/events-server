@@ -5,12 +5,11 @@ module Recipient
 
 import Control.Applicative ((<|>))
 import Data.Aeson
-import Data.Text (Text)
 import Data.UUID (UUID)
 
 
 data Recipient
-  = UserRecipient !Text
+  = UserRecipient !UUID
   | GroupRecipient !UUID
   | SessionRecipient !UUID
   deriving (Eq, Show)
