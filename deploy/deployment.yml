@@ -9,6 +9,11 @@ spec:
       - name: events
         image: images.home.mtaylor.io/events-mtaylor-io
         env:
+        - name: HOST
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: host
         - name: MTAYLOR_IO_USERNAME
           valueFrom:
             configMapKeyRef:
