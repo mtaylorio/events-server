@@ -19,8 +19,7 @@ import State
 
 authorizeJoinGroup :: State -> Client -> UUID -> IO ()
 authorizeJoinGroup state client group = do
-  let uid = UserUUID $ unClientUser client
-      uident = UserIdentifier (Just uid) Nothing Nothing
+  let uident = userIdentifierFromText $ unClientUser client
       auth = AuthorizationRequest
         { authorizationRequestUser = uident
         , authorizationRequestHost = unStateHost state

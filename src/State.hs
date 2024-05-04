@@ -20,7 +20,7 @@ import Client
 data State = State
   { unStateHost :: !Text
   , unStateClientEnv :: !SC.ClientEnv
-  , unStateUsers :: !(TVar (Map UUID [TVar Client]))
+  , unStateUsers :: !(TVar (Map Text [TVar Client]))
   , unStateGroups :: !(TVar (Map UUID [TVar Client]))
   , unStateSessions :: !(TVar (Map UUID (TVar Client)))
   }
@@ -45,12 +45,14 @@ insertClient state client = do
 removeClient :: State -> TVar Client -> STM ()
 removeClient state client = do
   client' <- readTVar client
-  modifyTVar' (unStateUsers state) $ modifyUsers client'
-  modifyTVar' (unStateGroups state) $ modifyGroups client'
+  modifyTVar' (unStateUsers state) modifyUsers
+  modifyTVar' (unStateGroups state) modifyGroups
   modifyTVar' (unStateSessions state) $ delete (unClientSession client')
   where
-  modifyUsers client' = adjust (Prelude.filter (/= client)) (unClientUser client')
-  modifyGroups client' = adjust (Prelude.filter (/= client)) (unClientUser client')
+  modifyUsers :: Map Text [TVar Client] -> Map Text [TVar Client]
+  modifyUsers = Data.Map.Strict.map f where f = Prelude.filter (/= client)
+  modifyGroups :: Map UUID [TVar Client] -> Map UUID [TVar Client]
+  modifyGroups = Data.Map.Strict.map f where f = Prelude.filter (/= client)
 
 
 joinGroup :: State -> UUID -> TVar Client -> STM ()

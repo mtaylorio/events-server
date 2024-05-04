@@ -42,8 +42,7 @@ websocketHandshake state pending = do
   clientHelloBytes <- WS.receiveData conn
   case decode clientHelloBytes of
     Just clientHello -> do
-      let uid = UserUUID $ unClientHelloUser clientHello
-          uident = UserIdentifier (Just uid) Nothing Nothing
+      let uident = userIdentifierFromText $ unClientHelloUser clientHello
           client = authorizeClient $ AuthorizationRequest
             { authorizationRequestUser = uident
             , authorizationRequestHost = unStateHost state
@@ -100,7 +99,7 @@ sendToClient msg clientVar = do
   WS.sendTextData (unClientConn client) (encode msg)
 
 
-sendToUser :: State -> UUID -> Message -> IO ()
+sendToUser :: State -> Text -> Message -> IO ()
 sendToUser state user msg = do
   users <- readTVarIO $ unStateUsers state
   forM_ (M.lookup user users) (mapM_ (sendToClient msg))

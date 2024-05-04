@@ -13,7 +13,7 @@ import qualified Network.WebSockets as WS
 
 data Client = Client
   { unClientConn :: !WS.Connection
-  , unClientUser :: !UUID
+  , unClientUser :: !Text
   , unClientGroups :: ![UUID]
   , unClientSession :: !UUID
   , unClientToken :: !Text
@@ -21,7 +21,7 @@ data Client = Client
 
 
 data ClientHello = ClientHello
-  { unClientHelloUser :: !UUID
+  { unClientHelloUser :: !Text
   , unClientHelloSession :: !UUID
   , unClientHelloToken :: !Text
   } deriving (Eq, Show)

@@ -5,26 +5,26 @@
 
 packages:
 - completed:
-    commit: 566fecd7ed188d651e3d424f5ac176fe50c997bd
+    commit: 1f6e6c1a351088225e199150d66318ed66dcbafd
     git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
     name: iam-mtaylor-io-client
     pantry-tree:
-      sha256: 09fadaaedd0dff0711c82904129f0156f83f6bcb97d7f7a95b00fe2ca30239e6
+      sha256: 78a16de9086fdad4f4e94443dd05936c959fd6800c7ebbc3a74cba4b3783e64a
       size: 2621
     version: 0.1.0.0
   original:
-    commit: 566fecd7ed188d651e3d424f5ac176fe50c997bd
+    commit: 1f6e6c1a351088225e199150d66318ed66dcbafd
     git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
 - completed:
-    commit: 5170f864eda0b561b22a0e53137fab9c59f97daa
+    commit: fc30520de50dde6aacee3fb5e07d5715df7c969a
     git: https://github.com/mtaylor91/iam-mtaylor-io-core.git
     name: iam-mtaylor-io-core
     pantry-tree:
-      sha256: 593818937b047649a892e21ff6661c64e7cee5eeca7f5af4984bb27af2d9ea12
+      sha256: c4449b7916412c1904068bb69bc25bb70af8cba6002acd11be883640a40791d3
       size: 1839
     version: 0.1.0.0
   original:
-    commit: 5170f864eda0b561b22a0e53137fab9c59f97daa
+    commit: fc30520de50dde6aacee3fb5e07d5715df7c969a
     git: https://github.com/mtaylor91/iam-mtaylor-io-core.git
 snapshots:
 - completed:
