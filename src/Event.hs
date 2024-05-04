@@ -15,15 +15,18 @@ data Event
   = EventMessage !Message
   | EventJoinGroup !UUID
   | EventLeaveGroup !UUID
+  deriving (Eq, Show)
 
 
 instance FromJSON Event where
   parseJSON (Object o) = do
-    eventType :: Text <- o .: "type"
+    eventType :: Maybe Text <- o .:? "type"
     case eventType of
-      "joinGroup" -> EventJoinGroup <$> o .: "group"
-      "leaveGroup" -> EventLeaveGroup <$> o .: "group"
-      _ -> EventMessage <$> parseJSON (Object o)
+      Nothing -> EventMessage <$> parseJSON (Object o)
+      Just "message" -> EventMessage <$> parseJSON (Object o)
+      Just "joinGroup" -> EventJoinGroup <$> o .: "group"
+      Just "leaveGroup" -> EventLeaveGroup <$> o .: "group"
+      Just unrecognized -> fail $ "Unrecognized event type: " ++ show unrecognized
   parseJSON _ = fail "Expected an object"
 
 
