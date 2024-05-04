@@ -15,7 +15,7 @@ import qualified Servant.Client as SC
 
 import IAM.Authorization
 import IAM.Client
-import IAM.Policy (Action(Read))
+import IAM.Policy (Action(Read), Effect(Allow, Deny))
 import IAM.UserIdentifier
 
 import Client
@@ -52,14 +52,18 @@ websocketHandshake state pending = do
             }
       result <- SC.runClientM client (unStateClientEnv state)
       case result of
+        Right (AuthorizationResponse Allow) -> do
+          putStrLn "Authorization succeeded"
+          client' <- atomically $ insertClient state $ newClient conn clientHello
+          return (client', conn)
+        Right (AuthorizationResponse Deny) -> do
+          putStrLn "Authorization denied"
+          WS.sendClose conn ("Authorization denied" :: Text)
+          throwIO $ userError "Authorization denied"
         Left err -> do
           putStrLn $ "Authorization failed: " ++ show err
           WS.sendClose conn ("Authorization failed" :: Text)
           throwIO $ userError "Authorization failed"
-        Right _ -> do
-          putStrLn "Authorization succeeded"
-          client' <- atomically $ insertClient state $ newClient conn clientHello
-          return (client', conn)
     Nothing ->
       throwIO $ userError "Expected a ClientHello message"
 

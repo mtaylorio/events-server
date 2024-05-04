@@ -10,7 +10,7 @@ import qualified Servant.Client as SC
 
 import IAM.Authorization
 import IAM.Client
-import IAM.Policy (Action(Read))
+import IAM.Policy (Action(Read), Effect(Allow, Deny))
 import IAM.UserIdentifier
 
 import Client
@@ -29,10 +29,14 @@ authorizeJoinGroup state client group = do
         }
   result <- SC.runClientM (authorizeClient auth) (unStateClientEnv state)
   case result of
+    Right (AuthorizationResponse Allow) ->
+      putStrLn "Authorization succeeded"
+    Right (AuthorizationResponse Deny) -> do
+      putStrLn "Authorization denied"
+      throwIO $ userError "Authorization denied"
     Left err -> do
       putStrLn $ "Authorization failed: " ++ show err
       throwIO $ userError "Authorization failed"
-    Right _ -> putStrLn "Authorization succeeded"
 
 
 handleJoinGroup :: State -> TVar Client -> UUID -> IO ()
