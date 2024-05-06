@@ -28,8 +28,11 @@ import State
 websocketHandler :: State -> WS.PendingConnection -> IO ()
 websocketHandler state pending = do
   (client, conn) <- websocketHandshake state pending
-  catch (websocketLoop state client conn) (onException client)
+  catch (handleMessages client conn) (onException client)
   where
+  handleMessages client conn = do
+    WS.withPingThread conn 30 (return ()) $ websocketLoop state client conn
+    atomically $ removeClient state client
   onException client e = do
     putStrLn $ "Exception: " ++ show (e :: WS.ConnectionException)
     atomically $ removeClient state client
