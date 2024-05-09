@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Server
+import Command
 
 main :: IO ()
-main = runServer
+main = run

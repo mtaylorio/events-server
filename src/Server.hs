@@ -3,13 +3,14 @@ module Server
   ( runServer
   ) where
 
-import Control.Concurrent (forkIO)
+import Control.Concurrent (forkIO, killThread)
 import Control.Concurrent.STM
 import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Client.TLS
 import Network.Wai.Middleware.RequestLogger
 import Servant
 import System.IO
+import System.Posix.Signals
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Handler.WebSockets as WaiWS
@@ -57,8 +58,11 @@ runServer = do
   state <- atomically $ initState hostname $ SC.mkClientEnv mgr url
 
   done <- newEmptyTMVarIO
-  _ <- forkIO $ runServerWithState state done
-  _ <- atomically $ takeTMVar done
+  serverThreadId <- forkIO $ runServerWithState state done
+  let shutdownServer = killThread serverThreadId
+  _ <- installHandler sigINT (Catch shutdownServer) Nothing
+  _ <- installHandler sigTERM (Catch shutdownServer) Nothing
+  () <- atomically $ takeTMVar done
 
   atomically $ takeTMVar done
 

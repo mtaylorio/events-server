@@ -28,6 +28,7 @@ library
       API
       Auth
       Client
+      Command
       Config
       Event
       Handlers
@@ -63,6 +64,7 @@ library
     , servant-server
     , stm
     , text
+    , unix
     , uuid
     , wai
     , wai-extra
@@ -101,6 +103,7 @@ executable events-mtaylor-io
     , servant-server
     , stm
     , text
+    , unix
     , uuid
     , wai
     , wai-extra
@@ -140,6 +143,7 @@ test-suite events-mtaylor-io-test
     , servant-server
     , stm
     , text
+    , unix
     , uuid
     , wai
     , wai-extra

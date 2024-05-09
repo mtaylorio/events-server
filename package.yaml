@@ -39,6 +39,7 @@ dependencies:
 - servant-server
 - stm
 - text
+- unix
 - uuid
 - wai
 - wai-extra

@@ -25,4 +25,4 @@ COPY --from=build /build/.local/bin/events-mtaylor-io /usr/local/bin/events-mtay
 # Set the user
 USER iam
 # Set the entrypoint
-ENTRYPOINT ["events-mtaylor-io"]
+ENTRYPOINT ["events-mtaylor-io", "server"]
