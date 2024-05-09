@@ -9,6 +9,7 @@ import Data.Aeson
 import Data.Foldable (forM_)
 import Data.Text (Text)
 import Data.UUID (UUID)
+import System.IO
 import qualified Data.Map.Strict as M
 import qualified Network.WebSockets as WS
 import qualified Servant.Client as SC
@@ -30,18 +31,24 @@ websocketHandler state pending = do
   (client, conn) <- websocketHandshake state pending
   catch (handleMessages client conn) (onException client)
   where
+  handleMessages :: TVar Client -> WS.Connection -> IO ()
   handleMessages client conn = do
     WS.withPingThread conn 30 (return ()) $ websocketLoop state client conn
     atomically $ removeClient state client
-  onException client e = do
-    putStrLn $ "Exception: " ++ show (e :: WS.ConnectionException)
+  onException :: TVar Client -> WS.ConnectionException -> IO ()
+  onException client (WS.CloseRequest _ _) = do
     atomically $ removeClient state client
+  onException client WS.ConnectionClosed = do
+    atomically $ removeClient state client
+  onException client e = do
+    atomically $ removeClient state client
+    putStrLn $ "Exception: " ++ show (e :: WS.ConnectionException)
+    hFlush stdout
 
 
 websocketHandshake :: State -> WS.PendingConnection -> IO (TVar Client, WS.Connection)
 websocketHandshake state pending = do
   conn <- WS.acceptRequest pending
-  putStrLn "WebSocket connection established"
   clientHelloBytes <- WS.receiveData conn
   case decode clientHelloBytes of
     Just clientHello -> do
@@ -57,15 +64,14 @@ websocketHandshake state pending = do
       result <- SC.runClientM client (unStateClientEnv state)
       case result of
         Right (AuthorizationResponse Allow) -> do
-          putStrLn "Authorization succeeded"
           client' <- atomically $ insertClient state $ newClient conn clientHello
           return (client', conn)
         Right (AuthorizationResponse Deny) -> do
-          putStrLn "Authorization denied"
           WS.sendClose conn ("Authorization denied" :: Text)
           throwIO $ userError "Authorization denied"
         Left err -> do
           putStrLn $ "Authorization failed: " ++ show err
+          hFlush stdout
           WS.sendClose conn ("Authorization failed" :: Text)
           throwIO $ userError "Authorization failed"
     Nothing ->
@@ -79,22 +85,16 @@ websocketLoop state client conn = do
     Just evt ->
       case evt of
         EventJoinGroup group -> do
-          putStrLn $ "Joining group " ++ show group
           atomically $ joinGroup state group client
         EventLeaveGroup group -> do
-          putStrLn $ "Leaving group " ++ show group
           atomically $ leaveGroup state group client
         EventMessage msg -> do
-          putStrLn "Received a message"
           case unMessageRecipient msg of
             UserRecipient user -> do
-              putStrLn $ "Sending message to user " ++ show user
               sendToUser state user msg
             GroupRecipient group -> do
-              putStrLn $ "Sending message to group " ++ show group
               sendToGroup state group msg
             SessionRecipient session -> do
-              putStrLn $ "Sending message to session " ++ show session
               sendToSession state session msg
     Nothing ->
       throwIO $ userError "Expected a message"

@@ -9,6 +9,7 @@ import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Client.TLS
 import Network.Wai.Middleware.RequestLogger
 import Servant
+import System.IO
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Handler.WebSockets as WaiWS
@@ -38,11 +39,12 @@ app state req respond' =
   let handler = websocketHandler state
    in case WaiWS.websocketsApp WS.defaultConnectionOptions handler req of
     Just response -> respond' response
-    Nothing -> serveWithContext
+    Nothing -> logStdout (
+      serveWithContext
       (Proxy :: Proxy API)
       (authContext (unStateHost state) (unStateClientEnv state))
       (server state)
-      req respond'
+      ) req respond'
 
 
 runServer :: IO ()
@@ -63,5 +65,6 @@ runServer = do
 runServerWithState :: State -> TMVar () -> IO ()
 runServerWithState state done = do
   putStrLn "Starting server on http://localhost:8080"
-  Warp.run 8080 $ logStdout $ app state
+  hFlush stdout
+  Warp.run 8080 $ app state
   atomically $ putTMVar done ()
