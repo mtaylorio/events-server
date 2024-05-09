@@ -29,9 +29,10 @@ import State
 
 server :: State -> Server API
 server state auth
-  = sessionsHandler state auth
-  :<|> usersHandler state auth
+  = usersHandler state auth
   :<|> groupsHandler state auth
+  :<|> sessionsHandler state auth
+  :<|> sessionHandler state auth
 
 
 app :: State -> Wai.Application

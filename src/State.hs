@@ -58,8 +58,11 @@ removeClient state client = do
 joinGroup :: State -> UUID -> TVar Client -> STM ()
 joinGroup state group client = do
   modifyTVar' (unStateGroups state) $ insertWith (++) group [client]
+  modifyTVar' client $ \c -> c { unClientGroups = group : unClientGroups c }
 
 
 leaveGroup :: State -> UUID -> TVar Client -> STM ()
 leaveGroup state group client = do
   modifyTVar' (unStateGroups state) $ adjust (Prelude.filter (/= client)) group
+  modifyTVar' client $ \c ->
+    c { unClientGroups = Prelude.filter (/= group) (unClientGroups c) }

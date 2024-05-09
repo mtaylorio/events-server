@@ -52,13 +52,6 @@ handleJoinGroup state client group = do
   atomically $ joinGroup state group client
 
 
-sessionsHandler :: State -> Auth -> Handler SessionsResponse
-sessionsHandler state (Authenticated{}) = do
-  sessions <- liftIO $ readTVarIO $ unStateSessions state
-  return $ SessionsResponse $ Map.keys sessions
-sessionsHandler _ _ = throwError err401
-
-
 usersHandler :: State -> Auth -> Handler UsersResponse
 usersHandler state (Authenticated{}) = do
   users <- liftIO $ readTVarIO $ unStateUsers state
@@ -71,3 +64,21 @@ groupsHandler state (Authenticated{}) = do
   groups <- liftIO $ readTVarIO $ unStateGroups state
   return $ GroupsResponse $ Map.keys groups
 groupsHandler _ _ = throwError err401
+
+
+sessionsHandler :: State -> Auth -> Handler SessionsResponse
+sessionsHandler state (Authenticated{}) = do
+  sessions <- liftIO $ readTVarIO $ unStateSessions state
+  return $ SessionsResponse $ Map.keys sessions
+sessionsHandler _ _ = throwError err401
+
+
+sessionHandler :: State -> Auth -> UUID -> Handler SessionResponse
+sessionHandler state (Authenticated{}) session = do
+  sessions <- liftIO $ readTVarIO $ unStateSessions state
+  case Map.lookup session sessions of
+    Just client -> do
+      client' <- liftIO $ readTVarIO client
+      return $ SessionResponse session (unClientUser client') (unClientGroups client')
+    Nothing -> throwError err404
+sessionHandler _ _ _ = throwError err401
