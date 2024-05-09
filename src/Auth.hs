@@ -17,6 +17,7 @@ import Network.Socket (SockAddr)
 import Network.Wai
 import Servant
 import Servant.Server.Experimental.Auth
+import System.IO
 import qualified Data.ByteString
 import qualified Servant.Client as SC
 
@@ -92,8 +93,9 @@ authHandler host clientEnv = mkAuthHandler handler where
         return $ Authenticated addr headers user
       Right (AuthorizationResponse Deny) ->
         throwError err403
-      Left _ ->
-        -- TODO: handle error
+      Left e -> do
+        liftIO $ putStrLn "Authorization failed"
+        liftIO $ print e >> hFlush stdout
         throwError err500
   handler :: Request -> Handler Auth
   handler req = do
@@ -105,7 +107,9 @@ authHandler host clientEnv = mkAuthHandler handler where
             userClient = mkUserClient uident
         userResult <- liftIO $ SC.runClientM (getUser userClient) clientEnv
         case userResult of
-          Left _ ->
+          Left e -> do
+            liftIO $ putStrLn "Get user failed"
+            liftIO $ print e >> hFlush stdout
             throwError err500
           Right user ->
             if validPublicKey user (unAuthHeadersKey headers)
