@@ -5,7 +5,10 @@ module Handlers
 
 import Control.Concurrent.STM
 import Control.Exception (throwIO)
+import Control.Monad.IO.Class (liftIO)
 import Data.UUID
+import Servant
+import qualified Data.Map as Map
 import qualified Servant.Client as SC
 
 import IAM.Authorization
@@ -13,6 +16,8 @@ import IAM.Client
 import IAM.Policy (Action(Read), Effect(Allow, Deny))
 import IAM.UserIdentifier
 
+import API
+import Auth
 import Client
 import State
 
@@ -45,3 +50,24 @@ handleJoinGroup state client group = do
   client' <- readTVarIO client
   authorizeJoinGroup state client' group
   atomically $ joinGroup state group client
+
+
+sessionsHandler :: State -> Auth -> Handler SessionsResponse
+sessionsHandler state (Authenticated{}) = do
+  sessions <- liftIO $ readTVarIO $ unStateSessions state
+  return $ SessionsResponse $ Map.keys sessions
+sessionsHandler _ _ = throwError err401
+
+
+usersHandler :: State -> Auth -> Handler UsersResponse
+usersHandler state (Authenticated{}) = do
+  users <- liftIO $ readTVarIO $ unStateUsers state
+  return $ UsersResponse $ Map.keys users
+usersHandler _ _ = throwError err401
+
+
+groupsHandler :: State -> Auth -> Handler GroupsResponse
+groupsHandler state (Authenticated{}) = do
+  groups <- liftIO $ readTVarIO $ unStateGroups state
+  return $ GroupsResponse $ Map.keys groups
+groupsHandler _ _ = throwError err401

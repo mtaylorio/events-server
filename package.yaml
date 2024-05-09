@@ -22,8 +22,10 @@ description:         Please see the README on GitHub at <https://github.com/mtay
 dependencies:
 - aeson
 - base >= 4.7 && < 5
+- base64
 - bytestring
 - containers
+- ed25519
 - http-client
 - http-client-tls
 - http-types
@@ -34,6 +36,7 @@ dependencies:
 - network
 - optparse-applicative
 - servant-client
+- servant-server
 - stm
 - text
 - uuid

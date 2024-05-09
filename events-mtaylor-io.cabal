@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      API
+      Auth
       Client
       Config
       Event
@@ -44,8 +46,10 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , base64
     , bytestring
     , containers
+    , ed25519
     , http-client
     , http-client-tls
     , http-types
@@ -56,6 +60,7 @@ library
     , network
     , optparse-applicative
     , servant-client
+    , servant-server
     , stm
     , text
     , uuid
@@ -78,8 +83,10 @@ executable events-mtaylor-io
   build-depends:
       aeson
     , base >=4.7 && <5
+    , base64
     , bytestring
     , containers
+    , ed25519
     , events-mtaylor-io
     , http-client
     , http-client-tls
@@ -91,6 +98,7 @@ executable events-mtaylor-io
     , network
     , optparse-applicative
     , servant-client
+    , servant-server
     , stm
     , text
     , uuid
@@ -114,8 +122,10 @@ test-suite events-mtaylor-io-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , base64
     , bytestring
     , containers
+    , ed25519
     , events-mtaylor-io
     , http-client
     , http-client-tls
@@ -127,6 +137,7 @@ test-suite events-mtaylor-io-test
     , network
     , optparse-applicative
     , servant-client
+    , servant-server
     , stm
     , text
     , uuid
