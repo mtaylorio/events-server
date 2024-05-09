@@ -54,11 +54,11 @@ authContext host clientEnv = authHandler host clientEnv :. EmptyContext
 
 authHandler :: Text -> SC.ClientEnv -> AuthHandler Request Auth
 authHandler host clientEnv = mkAuthHandler handler where
-  authenticate :: Request -> Either Auth (SockAddr, AuthHeaders)
+  authenticate :: Request -> Handler (Either Auth (SockAddr, AuthHeaders))
   authenticate req = do
     let addr = remoteHost req
     case authRequestHeaders req of
-      Nothing -> Left $ Unauthenticated addr
+      Nothing -> return $ Left $ Unauthenticated addr
       Just headers ->
         let signed = stringToSign method host' path query requestId (Just token)
             host' = encodeUtf8 $ unAuthHeadersHost headers
@@ -70,9 +70,12 @@ authHandler host clientEnv = mkAuthHandler handler where
             signature = unAuthHeadersSignature headers
             validHost = host == decodeUtf8 host'
             validSignature = dverify (unAuthHeadersKey headers) signed signature
+            errorMessage = if not validHost
+              then "Invalid host"
+              else "Invalid signature"
          in if not (validHost && validSignature)
-          then Left $ Unauthenticated addr
-          else Right (addr, headers)
+          then throwError $ err403 { errBody = errorMessage }
+          else return $ Right (addr, headers)
   authorize :: Request -> SockAddr -> AuthHeaders -> User -> Handler Auth
   authorize req addr headers user = do
     let uident = userIdentifierFromText $ unAuthHeadersUser headers
@@ -93,8 +96,9 @@ authHandler host clientEnv = mkAuthHandler handler where
         -- TODO: handle error
         throwError err500
   handler :: Request -> Handler Auth
-  handler req =
-    case authenticate req of
+  handler req = do
+    result <- authenticate req
+    case result of
       Left auth -> return auth
       Right (addr, headers) -> do
         let uident = userIdentifierFromText $ unAuthHeadersUser headers
@@ -102,7 +106,7 @@ authHandler host clientEnv = mkAuthHandler handler where
         userResult <- liftIO $ SC.runClientM (getUser userClient) clientEnv
         case userResult of
           Left _ ->
-            return $ Unauthenticated addr
+            throwError err500
           Right user ->
             if validPublicKey user (unAuthHeadersKey headers)
               then authorize req addr headers user
