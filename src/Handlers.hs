@@ -11,9 +11,8 @@ import Servant
 import qualified Data.Map as Map
 import qualified Servant.Client as SC
 
-import IAM.Authorization
 import IAM.Client
-import IAM.Policy (Action(Read), Effect(Allow, Deny))
+import IAM.GroupIdentifier
 import IAM.UserIdentifier
 
 import API
@@ -22,33 +21,27 @@ import Client
 import State
 
 
-authorizeJoinGroup :: State -> Client -> UUID -> IO ()
-authorizeJoinGroup state client group = do
+checkMembership :: State -> Client -> UUID -> IO ()
+checkMembership state client group = do
   let uid = UserUUID $ unClientUser client
       uident = UserIdentifier (Just uid) Nothing Nothing
-      auth = AuthorizationRequest
-        { authorizationRequestUser = uident
-        , authorizationRequestHost = unStateHost state
-        , authorizationRequestAction = Read
-        , authorizationRequestResource = "/groups/" <> toText group
-        , authorizationRequestToken = Just $ unClientToken client
-        }
-  result <- SC.runClientM (authorizeClient auth) (unStateClientEnv state)
+      gid = GroupUUID group
+      gident = GroupId gid
+      gclient = mkGroupClient gident
+      mclient = memberClient gclient uident
+      client' = getMembership mclient
+  result <- SC.runClientM client' (unStateClientEnv state)
   case result of
-    Right (AuthorizationResponse Allow) ->
-      putStrLn "Authorization succeeded"
-    Right (AuthorizationResponse Deny) -> do
-      putStrLn "Authorization denied"
-      throwIO $ userError "Authorization denied"
+    Right NoContent ->
+      putStrLn "Membership check succeeded"
     Left err -> do
-      putStrLn $ "Authorization failed: " ++ show err
-      throwIO $ userError "Authorization failed"
+      throwIO $ userError $ "Membership check failed: " ++ show err
 
 
 handleJoinGroup :: State -> TVar Client -> UUID -> IO ()
 handleJoinGroup state client group = do
   client' <- readTVarIO client
-  authorizeJoinGroup state client' group
+  checkMembership state client' group
   atomically $ joinGroup state group client
 
 
