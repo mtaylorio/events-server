@@ -21,6 +21,7 @@ import IAM.UserIdentifier
 
 import Client
 import Event
+import Handlers
 import Message
 import Recipient
 import State
@@ -84,8 +85,12 @@ websocketLoop state client conn = do
   case decode evtBytes of
     Just evt ->
       case evt of
+        EventPublish topic data' -> do
+          handlePublish state topic data'
+        EventSubscribe topic -> do
+          handleSubscribe state topic client
         EventJoinGroup group -> do
-          atomically $ joinGroup state group client
+          handleJoinGroup state client group
         EventLeaveGroup group -> do
           atomically $ leaveGroup state group client
         EventMessage msg -> do

@@ -15,6 +15,8 @@ import Data.UUID (UUID)
 import qualified Servant.Client as SC
 
 import Client
+import Event
+import Topic
 
 
 data State = State
@@ -23,12 +25,13 @@ data State = State
   , unStateUsers :: !(TVar (Map UUID [TVar Client]))
   , unStateGroups :: !(TVar (Map UUID [TVar Client]))
   , unStateSessions :: !(TVar (Map UUID (TVar Client)))
+  , unStateTopics :: !(TopicManager UUID EventData)
   }
 
 
 initState :: Text -> SC.ClientEnv -> STM State
-initState host clientEnv =
-  State host clientEnv <$> newTVar empty <*> newTVar empty <*> newTVar empty
+initState host clientEnv = State host clientEnv
+  <$> newTVar empty <*> newTVar empty <*> newTVar empty <*> createTopicManager
 
 
 insertClient :: State -> Client -> STM (TVar Client)

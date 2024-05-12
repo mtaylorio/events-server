@@ -38,6 +38,7 @@ library
       Server
       Socket
       State
+      Topic
   other-modules:
       Paths_events_mtaylor_io
   autogen-modules:

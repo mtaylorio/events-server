@@ -1,14 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Client
-  ( Client(..)
-  , ClientHello(..)
+  ( addSubscription
   , newClient
+  , Client(..)
+  , ClientHello(..)
   ) where
 
 import Data.Aeson
 import Data.Text (Text)
 import Data.UUID (UUID)
 import qualified Network.WebSockets as WS
+
+import Topic
 
 
 data Client = Client
@@ -17,6 +20,7 @@ data Client = Client
   , unClientGroups :: ![UUID]
   , unClientSession :: !UUID
   , unClientToken :: !Text
+  , unClientSubscriptions :: ![Unsubscribe]
   }
 
 
@@ -41,4 +45,9 @@ instance ToJSON ClientHello where
 
 
 newClient :: WS.Connection -> ClientHello -> Client
-newClient conn (ClientHello user session token) = Client conn user [] session token
+newClient conn (ClientHello user session token) = Client conn user [] session token []
+
+
+addSubscription :: Unsubscribe -> Client -> Client
+addSubscription unsub client = client
+  { unClientSubscriptions = unsub : unClientSubscriptions client }

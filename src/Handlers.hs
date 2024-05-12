@@ -6,9 +6,11 @@ module Handlers
 import Control.Concurrent.STM
 import Control.Exception (throwIO)
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
 import Data.UUID
 import Servant
 import qualified Data.Map as Map
+import qualified Network.WebSockets as WS
 import qualified Servant.Client as SC
 
 import IAM.Client
@@ -18,7 +20,26 @@ import IAM.UserIdentifier
 import API
 import Auth
 import Client
+import Event
 import State
+import Topic
+
+
+handlePublish :: State -> UUID -> EventData -> IO ()
+handlePublish state = publish (unStateTopics state)
+
+
+handleSubscribe :: State -> UUID -> TVar Client -> IO ()
+handleSubscribe state topic client = do
+  unsubscribe <- subscribe (unStateTopics state) topic handleEvent
+  case unsubscribe of
+    Just unsubscribe' -> atomically $ modifyTVar' client $ addSubscription unsubscribe'
+    Nothing -> return ()
+  where
+  handleEvent :: EventData -> IO ()
+  handleEvent eventData = do
+    client' <- readTVarIO client
+    WS.sendTextData (unClientConn client') (encode eventData)
 
 
 checkMembership :: State -> Client -> UUID -> IO ()
