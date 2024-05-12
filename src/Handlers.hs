@@ -96,3 +96,17 @@ sessionHandler state (Authenticated{}) session = do
       return $ SessionResponse session (unClientUser client') (unClientGroups client')
     Nothing -> throwError err404
 sessionHandler _ _ _ = throwError err401
+
+
+createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
+createBroadcastTopicHandler state (Authenticated{}) topic = do
+  liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
+  return NoContent
+createBroadcastTopicHandler _ _ _ = throwError err401
+
+
+createSendReceiveTopicHandler :: State -> Auth -> UUID -> Handler NoContent
+createSendReceiveTopicHandler state (Authenticated{}) topic = do
+  liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
+  return NoContent
+createSendReceiveTopicHandler _ _ _ = throwError err401

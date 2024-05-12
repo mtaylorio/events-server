@@ -26,7 +26,7 @@ import IAM.Client.Util
 import IAM.Session
 
 import API
-import Auth (authContext)
+import Auth
 import Config (getHost)
 import Handlers
 import Microseconds
@@ -40,6 +40,13 @@ server state auth
   :<|> groupsHandler state auth
   :<|> sessionsHandler state auth
   :<|> sessionHandler state auth
+  :<|> topicsServer state auth
+
+
+topicsServer :: State -> Auth -> Server TopicsAPI
+topicsServer state auth topic
+  = createBroadcastTopicHandler state auth topic
+  :<|> createSendReceiveTopicHandler state auth topic
 
 
 app :: State -> Wai.Application

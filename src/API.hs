@@ -80,4 +80,11 @@ type API = AuthProtect "signature-auth" :>
   :<|> "groups" :> Get '[JSON] GroupsResponse
   :<|> "sessions" :> Get '[JSON] SessionsResponse
   :<|> "session" :> Capture "session" UUID :> Get '[JSON] SessionResponse
+  :<|> "topics" :> TopicsAPI
+  )
+
+
+type TopicsAPI = Capture "topic" UUID :>
+  ( "broadcast" :> PutNoContent
+  :<|> "send-receive" :> PutNoContent
   )
