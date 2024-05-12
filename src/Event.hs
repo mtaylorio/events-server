@@ -11,7 +11,20 @@ import Data.UUID (UUID)
 import qualified Data.Aeson.KeyMap as KM
 
 
-type EventData = KM.KeyMap Value
+data EventData = EventData
+  { eventDataId :: UUID
+  , eventDataValue :: KM.KeyMap Value
+  } deriving (Eq, Show)
+
+
+instance FromJSON EventData where
+  parseJSON = withObject "EventData" $ \obj -> do
+    id' <- obj .: "id"
+    return $ EventData id' obj
+
+
+instance ToJSON EventData where
+  toJSON (EventData id' value) = Object $ KM.insert "id" (toJSON id') value
 
 
 data Event
