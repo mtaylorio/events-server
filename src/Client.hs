@@ -19,35 +19,34 @@ import Topic
 data Client = Client
   { unClientConn :: !WS.Connection
   , unClientUser :: !UUID
-  , unClientGroups :: ![UUID]
-  , unClientSession :: !UUID
   , unClientToken :: !Text
+  , unClientSession :: !UUID
   , unClientSubscriptions :: ![(Unsubscribe, UUID)]
   }
 
 
 data ClientHello = ClientHello
   { unClientHelloUser :: !UUID
-  , unClientHelloSession :: !UUID
   , unClientHelloToken :: !Text
+  , unClientHelloSession :: !UUID
   } deriving (Eq, Show)
 
 
 instance FromJSON ClientHello where
   parseJSON (Object o) = ClientHello
     <$> o .: "user"
-    <*> o .: "session"
     <*> o .: "token"
+    <*> o .: "session"
   parseJSON _ = fail "Expected an object"
 
 
 instance ToJSON ClientHello where
-  toJSON (ClientHello user session token) =
-    object ["user" .= user, "session" .= session, "token" .= token]
+  toJSON (ClientHello user token session) =
+    object ["user" .= user, "token" .= token, "session" .= session]
 
 
 newClient :: WS.Connection -> ClientHello -> Client
-newClient conn (ClientHello user session token) = Client conn user [] session token []
+newClient conn (ClientHello user token session) = Client conn user token session []
 
 
 disconnected :: Client -> IO ()

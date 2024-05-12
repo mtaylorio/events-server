@@ -1,11 +1,8 @@
-{-# LANGUAGE TupleSections #-}
 module State
   ( State(..)
   , initState
   , insertClient
   , removeClient
-  , joinGroup
-  , leaveGroup
   ) where
 
 import Control.Concurrent.STM
@@ -24,50 +21,24 @@ data State = State
   { unStateConfig :: !Config
   , unStateClientEnv :: !SC.ClientEnv
   , unStateDatabase :: !Pool.Pool
-  , unStateUsers :: !(TVar (Map UUID [TVar Client]))
-  , unStateGroups :: !(TVar (Map UUID [TVar Client]))
-  , unStateSessions :: !(TVar (Map UUID (TVar Client)))
+  , unStateClients :: !(TVar (Map UUID (TVar Client)))
   , unStateTopics :: !(TopicManager UUID EventData)
   }
 
 
 initState :: Config -> SC.ClientEnv -> Pool.Pool -> STM State
-initState conf clientEnv db = State conf clientEnv db
-  <$> newTVar empty <*> newTVar empty <*> newTVar empty <*> createTopicManager
+initState conf clientEnv db =
+  State conf clientEnv db <$> newTVar empty <*> createTopicManager
 
 
 insertClient :: State -> Client -> STM (TVar Client)
 insertClient state client = do
   clientVar <- newTVar client
-  modifyTVar' (unStateUsers state) $ insertWith (++) (unClientUser client) [clientVar]
-  modifyTVar' (unStateGroups state) $ unionWith (++) (modifyGroups clientVar)
-  modifyTVar' (unStateSessions state) $ insert (unClientSession client) clientVar
+  modifyTVar' (unStateClients state) $ insert (unClientSession client) clientVar
   return clientVar
-  where
-  modifyGroups clientVar = fromList $ fmap (, [clientVar]) (unClientGroups client)
 
 
 removeClient :: State -> TVar Client -> STM ()
 removeClient state client = do
   client' <- readTVar client
-  modifyTVar' (unStateUsers state) modifyUsers
-  modifyTVar' (unStateGroups state) modifyGroups
-  modifyTVar' (unStateSessions state) $ delete (unClientSession client')
-  where
-  modifyUsers :: Map UUID [TVar Client] -> Map UUID [TVar Client]
-  modifyUsers = Data.Map.Strict.map f where f = Prelude.filter (/= client)
-  modifyGroups :: Map UUID [TVar Client] -> Map UUID [TVar Client]
-  modifyGroups = Data.Map.Strict.map f where f = Prelude.filter (/= client)
-
-
-joinGroup :: State -> UUID -> TVar Client -> STM ()
-joinGroup state group client = do
-  modifyTVar' (unStateGroups state) $ insertWith (++) group [client]
-  modifyTVar' client $ \c -> c { unClientGroups = group : unClientGroups c }
-
-
-leaveGroup :: State -> UUID -> TVar Client -> STM ()
-leaveGroup state group client = do
-  modifyTVar' (unStateGroups state) $ adjust (Prelude.filter (/= client)) group
-  modifyTVar' client $ \c ->
-    c { unClientGroups = Prelude.filter (/= group) (unClientGroups c) }
+  modifyTVar' (unStateClients state) $ delete (unClientSession client')

@@ -69,41 +69,18 @@ checkMembership state client group = do
       throwIO $ userError $ "Membership check failed: " ++ show err
 
 
-handleJoinGroup :: State -> TVar Client -> UUID -> IO ()
-handleJoinGroup state client group = do
-  client' <- readTVarIO client
-  checkMembership state client' group
-  atomically $ joinGroup state group client
-
-
-usersHandler :: State -> Auth -> Handler UsersResponse
-usersHandler state (Authenticated{}) = do
-  users <- liftIO $ readTVarIO $ unStateUsers state
-  return $ UsersResponse $ Map.keys users
-usersHandler _ _ = throwError err401
-
-
-groupsHandler :: State -> Auth -> Handler GroupsResponse
-groupsHandler state (Authenticated{}) = do
-  groups <- liftIO $ readTVarIO $ unStateGroups state
-  return $ GroupsResponse $ Map.keys groups
-groupsHandler _ _ = throwError err401
-
-
 sessionsHandler :: State -> Auth -> Handler SessionsResponse
 sessionsHandler state (Authenticated{}) = do
-  sessions <- liftIO $ readTVarIO $ unStateSessions state
-  return $ SessionsResponse $ Map.keys sessions
+  clients <- liftIO $ readTVarIO $ unStateClients state
+  return $ SessionsResponse $ Map.keys clients
 sessionsHandler _ _ = throwError err401
 
 
 sessionHandler :: State -> Auth -> UUID -> Handler SessionResponse
 sessionHandler state (Authenticated{}) session = do
-  sessions <- liftIO $ readTVarIO $ unStateSessions state
-  case Map.lookup session sessions of
-    Just client -> do
-      client' <- liftIO $ readTVarIO client
-      return $ SessionResponse session (unClientUser client') (unClientGroups client')
+  clients <- liftIO $ readTVarIO $ unStateClients state
+  case Map.lookup session clients of
+    Just _ -> return $ SessionResponse session
     Nothing -> throwError err404
 sessionHandler _ _ _ = throwError err401
 

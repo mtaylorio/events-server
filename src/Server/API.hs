@@ -12,9 +12,7 @@ import State
 
 server :: State -> Server API
 server state auth
-  = usersHandler state auth
-  :<|> groupsHandler state auth
-  :<|> sessionsHandler state auth
+  = sessionsHandler state auth
   :<|> sessionHandler state auth
   :<|> topicsServer state auth
 

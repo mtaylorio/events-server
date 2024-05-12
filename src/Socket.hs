@@ -6,11 +6,8 @@ module Socket
 import Control.Concurrent.STM
 import Control.Exception (catch, throwIO)
 import Data.Aeson
-import Data.Foldable (forM_)
 import Data.Text (Text)
-import Data.UUID (UUID)
 import System.IO
-import qualified Data.Map.Strict as M
 import qualified Network.WebSockets as WS
 import qualified Servant.Client as SC
 
@@ -23,8 +20,6 @@ import Client
 import Config
 import Event
 import Handlers
-import Message
-import Recipient
 import State
 
 
@@ -95,42 +90,6 @@ websocketLoop state client conn = do
           handleSubscribe state topic client
         EventUnsubscribe topic -> do
           handleUnsubscribe topic client
-        EventJoinGroup group -> do
-          handleJoinGroup state client group
-        EventLeaveGroup group -> do
-          atomically $ leaveGroup state group client
-        EventMessage msg -> do
-          case unMessageRecipient msg of
-            UserRecipient user -> do
-              sendToUser state user msg
-            GroupRecipient group -> do
-              sendToGroup state group msg
-            SessionRecipient session -> do
-              sendToSession state session msg
     Nothing ->
       throwIO $ userError "Expected a message"
   websocketLoop state client conn
-
-
-sendToClient :: Message -> TVar Client -> IO ()
-sendToClient msg clientVar = do
-  client <- readTVarIO clientVar
-  WS.sendTextData (unClientConn client) (encode msg)
-
-
-sendToUser :: State -> UUID -> Message -> IO ()
-sendToUser state user msg = do
-  users <- readTVarIO $ unStateUsers state
-  forM_ (M.lookup user users) (mapM_ (sendToClient msg))
-
-
-sendToGroup :: State -> UUID -> Message -> IO ()
-sendToGroup state group msg = do
-  groups <- readTVarIO $ unStateGroups state
-  forM_ (M.lookup group groups) (mapM_ (sendToClient msg))
-
-
-sendToSession :: State -> UUID -> Message -> IO ()
-sendToSession state session msg = do
-  sessions <- readTVarIO $ unStateSessions state
-  forM_ (M.lookup session sessions) (sendToClient msg)
