@@ -29,6 +29,31 @@ spec:
             secretKeyRef:
               name: events-mtaylor-io
               key: secret-key
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: postgres-host
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: postgres-port
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: events-mtaylor-io
+              key: postgres-password
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: events-mtaylor-io
+              key: postgres-db
         ports:
         - name: http
           protocol: TCP
