@@ -47,7 +47,7 @@ getPostgresConfig = ConfigPostgres
   <*> loadEnvWithDefault 5432 "POSTGRES_PORT" read
   <*> loadEnvWithDefault "postgres" "POSTGRES_USER" pack
   <*> loadEnvWithDefault "postgres" "POSTGRES_PASSWORD" pack
-  <*> loadEnvWithDefault "events" "POSTGRES_DATABASE" pack
+  <*> loadEnvWithDefault "events" "POSTGRES_DB" pack
 
 
 loadEnvWithDefault :: a -> String -> (String -> a) -> IO a
