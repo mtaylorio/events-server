@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Client
   ( addSubscription
+  , disconnected
   , newClient
   , Client(..)
   , ClientHello(..)
@@ -51,3 +52,7 @@ newClient conn (ClientHello user session token) = Client conn user [] session to
 addSubscription :: Unsubscribe -> Client -> Client
 addSubscription unsub client = client
   { unClientSubscriptions = unsub : unClientSubscriptions client }
+
+
+disconnected :: Client -> IO ()
+disconnected client = sequence_ (unClientSubscriptions client)

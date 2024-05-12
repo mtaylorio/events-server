@@ -38,10 +38,13 @@ websocketHandler state pending = do
     atomically $ removeClient state client
   onException :: TVar Client -> WS.ConnectionException -> IO ()
   onException client (WS.CloseRequest _ _) = do
+    disconnected =<< readTVarIO client
     atomically $ removeClient state client
   onException client WS.ConnectionClosed = do
+    disconnected =<< readTVarIO client
     atomically $ removeClient state client
   onException client e = do
+    disconnected =<< readTVarIO client
     atomically $ removeClient state client
     putStrLn $ "Exception: " ++ show (e :: WS.ConnectionException)
     hFlush stdout
