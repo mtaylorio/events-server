@@ -45,22 +45,21 @@ createTopicManager :: STM (TopicManager k e)
 createTopicManager = TopicManager <$> newTVar empty
 
 
-createBroadcastTopic :: Ord k => TopicManager k e -> k -> STM (Topic e)
+createBroadcastTopic :: Ord k => TopicManager k e -> k -> STM ()
 createBroadcastTopic tm k = do
   t <- createBroadcastTopic'
   insertTopic tm k t
 
 
-createSendReceiveTopic :: Ord k => TopicManager k e -> k -> STM (Topic e)
+createSendReceiveTopic :: Ord k => TopicManager k e -> k -> STM ()
 createSendReceiveTopic tm k = do
   t <- createSendReceiveTopic'
   insertTopic tm k t
 
 
-insertTopic :: (Ord k, Topic' t e) => TopicManager k e -> k -> t -> STM (Topic e)
+insertTopic :: (Ord k, Topic' t e) => TopicManager k e -> k -> t -> STM ()
 insertTopic (TopicManager topics) k t = do
   modifyTVar' topics $ insert k (Topic t)
-  return $ Topic t
 
 
 lookupTopic :: Ord k => TopicManager k e -> k -> STM (Maybe (Topic e))
