@@ -15,7 +15,8 @@ runDatabaseMigrations migrations pool = do
   hFlush stdout
 
   commands <- loadMigrationsFromDirectory migrations
-  runDatabaseMigrations' commands pool
+  let migrationCommands = MigrationInitialization : commands
+  runDatabaseMigrations' migrationCommands pool
 
   putStrLn "Done running migrations"
   hFlush stdout
@@ -26,9 +27,6 @@ runDatabaseMigrations migrations pool = do
 runDatabaseMigrations' :: [MigrationCommand] -> Pool.Pool -> IO ()
 runDatabaseMigrations' [] _ = return ()
 runDatabaseMigrations' (command:commands) pool = do
-  putStrLn $ "Running migration: " ++ show command
-  hFlush stdout
-
   let tr = runMigration command
   let session = transaction Serializable Write tr
 
@@ -38,5 +36,10 @@ runDatabaseMigrations' (command:commands) pool = do
       putStrLn $ "Error running migration: " ++ show err
       hFlush stdout
       exitFailure
-    Right _ ->
-      runDatabaseMigrations' commands pool
+    Right migrationResult ->
+      case migrationResult of
+        Nothing -> runDatabaseMigrations' commands pool
+        Just err -> do
+          putStrLn $ "Error running migration: " ++ show err
+          hFlush stdout
+          exitFailure

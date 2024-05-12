@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y libpq5 zlib1g \
   && adduser --system --no-create-home --uid 1000 iam
 # Copy the built executables
 COPY --from=build /build/.local/bin/events-mtaylor-io /usr/local/bin/events-mtaylor-io
+# Add the migrations
+ADD migrations /usr/local/share/events-mtaylor-io/migrations
 # Set the user
 USER iam
 # Set the entrypoint
