@@ -36,6 +36,9 @@ library
       Microseconds
       Recipient
       Server
+      Server.API
+      Server.App
+      Server.Session
       Socket
       State
       Topic
@@ -53,6 +56,10 @@ library
     , bytestring
     , containers
     , ed25519
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , http-client
     , http-client-tls
     , http-types
@@ -92,6 +99,10 @@ executable events-mtaylor-io
     , containers
     , ed25519
     , events-mtaylor-io
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , http-client
     , http-client-tls
     , http-types
@@ -132,6 +143,10 @@ test-suite events-mtaylor-io-test
     , containers
     , ed25519
     , events-mtaylor-io
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-transaction
     , http-client
     , http-client-tls
     , http-types

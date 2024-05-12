@@ -26,6 +26,10 @@ dependencies:
 - bytestring
 - containers
 - ed25519
+- hasql
+- hasql-migration
+- hasql-pool
+- hasql-transaction
 - http-client
 - http-client-tls
 - http-types
