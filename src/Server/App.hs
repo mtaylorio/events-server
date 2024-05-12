@@ -10,6 +10,7 @@ import qualified Network.WebSockets as WS
 
 import API
 import Auth
+import Config
 import Server.API
 import Socket (websocketHandler)
 import State
@@ -23,6 +24,6 @@ app state req respond' =
     Nothing -> logStdout (
       serveWithContext
       (Proxy :: Proxy API)
-      (authContext (unStateHost state) (unStateClientEnv state))
+      (authContext (configHost $ unStateConfig state) (unStateClientEnv state))
       (server state)
       ) req respond'

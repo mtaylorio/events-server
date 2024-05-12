@@ -10,18 +10,20 @@ module State
 
 import Control.Concurrent.STM
 import Data.Map.Strict
-import Data.Text (Text)
 import Data.UUID (UUID)
+import qualified Hasql.Pool as Pool
 import qualified Servant.Client as SC
 
 import Client
+import Config
 import Event
 import Topic
 
 
 data State = State
-  { unStateHost :: !Text
+  { unStateConfig :: !Config
   , unStateClientEnv :: !SC.ClientEnv
+  , unStateDatabase :: !Pool.Pool
   , unStateUsers :: !(TVar (Map UUID [TVar Client]))
   , unStateGroups :: !(TVar (Map UUID [TVar Client]))
   , unStateSessions :: !(TVar (Map UUID (TVar Client)))
@@ -29,8 +31,8 @@ data State = State
   }
 
 
-initState :: Text -> SC.ClientEnv -> STM State
-initState host clientEnv = State host clientEnv
+initState :: Config -> SC.ClientEnv -> Pool.Pool -> STM State
+initState conf clientEnv db = State conf clientEnv db
   <$> newTVar empty <*> newTVar empty <*> newTVar empty <*> createTopicManager
 
 

@@ -20,6 +20,7 @@ import IAM.Policy (Action(Read), Effect(Allow, Deny))
 import IAM.UserIdentifier
 
 import Client
+import Config
 import Event
 import Handlers
 import Message
@@ -60,7 +61,7 @@ websocketHandshake state pending = do
           uident = UserIdentifier (Just uid) Nothing Nothing
           client = authorizeClient $ AuthorizationRequest
             { authorizationRequestUser = uident
-            , authorizationRequestHost = unStateHost state
+            , authorizationRequestHost = configHost $ unStateConfig state
             , authorizationRequestAction = Read
             , authorizationRequestResource = "/"
             , authorizationRequestToken = Just $ unClientHelloToken clientHello

@@ -38,6 +38,7 @@ library
       Server
       Server.API
       Server.App
+      Server.Migrations
       Server.Session
       Socket
       State
