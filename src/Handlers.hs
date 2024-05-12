@@ -33,13 +33,23 @@ handleSubscribe :: State -> UUID -> TVar Client -> IO ()
 handleSubscribe state topic client = do
   unsubscribe <- subscribe (unStateTopics state) topic handleEvent
   case unsubscribe of
-    Just unsubscribe' -> atomically $ modifyTVar' client $ addSubscription unsubscribe'
+    Just unsub -> atomically $ modifyTVar' client $ addSubscription topic unsub
     Nothing -> return ()
   where
   handleEvent :: EventData -> IO ()
   handleEvent eventData = do
     client' <- readTVarIO client
     WS.sendTextData (unClientConn client') (encode eventData)
+
+
+handleUnsubscribe :: UUID -> TVar Client -> IO ()
+handleUnsubscribe topic client = do
+  client' <- readTVarIO client
+  case filter ((== topic) . snd) $ unClientSubscriptions client' of
+    [] -> return ()
+    ((unsub, _):_) -> do
+      unsub
+      atomically $ modifyTVar' client $ removeSubscription topic
 
 
 checkMembership :: State -> Client -> UUID -> IO ()

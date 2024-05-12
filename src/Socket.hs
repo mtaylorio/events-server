@@ -92,6 +92,8 @@ websocketLoop state client conn = do
           handlePublish state topic data'
         EventSubscribe topic -> do
           handleSubscribe state topic client
+        EventUnsubscribe topic -> do
+          handleUnsubscribe topic client
         EventJoinGroup group -> do
           handleJoinGroup state client group
         EventLeaveGroup group -> do

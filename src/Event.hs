@@ -19,6 +19,7 @@ type EventData = KM.KeyMap Value
 data Event
   = EventPublish !UUID !EventData
   | EventSubscribe !UUID
+  | EventUnsubscribe !UUID
   | EventMessage !Message
   | EventJoinGroup !UUID
   | EventLeaveGroup !UUID
@@ -35,6 +36,7 @@ instance FromJSON Event where
       Just "leaveGroup" -> EventLeaveGroup <$> o .: "group"
       Just "publish" -> EventPublish <$> o .: "topic" <*> o .: "data"
       Just "subscribe" -> EventSubscribe <$> o .: "topic"
+      Just "unsubscribe" -> EventUnsubscribe <$> o .: "topic"
       Just unrecognized -> fail $ "Unrecognized event type: " ++ show unrecognized
   parseJSON _ = fail "Expected an object"
 
@@ -44,6 +46,8 @@ instance ToJSON Event where
     object ["type" .= ("publish" :: Text), "topic" .= topic, "data" .= data']
   toJSON (EventSubscribe topic) =
     object ["type" .= ("subscribe" :: Text), "topic" .= topic]
+  toJSON (EventUnsubscribe topic) =
+    object ["type" .= ("unsubscribe" :: Text), "topic" .= topic]
   toJSON (EventMessage msg) = toJSON msg
   toJSON (EventJoinGroup group) =
     object ["type" .= ("joinGroup" :: Text), "group" .= group]

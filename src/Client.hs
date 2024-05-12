@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Client
-  ( addSubscription
+  ( newClient
   , disconnected
-  , newClient
+  , addSubscription
+  , removeSubscription
   , Client(..)
   , ClientHello(..)
   ) where
@@ -21,7 +22,7 @@ data Client = Client
   , unClientGroups :: ![UUID]
   , unClientSession :: !UUID
   , unClientToken :: !Text
-  , unClientSubscriptions :: ![Unsubscribe]
+  , unClientSubscriptions :: ![(Unsubscribe, UUID)]
   }
 
 
@@ -49,10 +50,15 @@ newClient :: WS.Connection -> ClientHello -> Client
 newClient conn (ClientHello user session token) = Client conn user [] session token []
 
 
-addSubscription :: Unsubscribe -> Client -> Client
-addSubscription unsub client = client
-  { unClientSubscriptions = unsub : unClientSubscriptions client }
-
-
 disconnected :: Client -> IO ()
-disconnected client = sequence_ (unClientSubscriptions client)
+disconnected client = mapM_ fst $ unClientSubscriptions client
+
+
+addSubscription :: UUID -> Unsubscribe -> Client -> Client
+addSubscription topic unsub client = client
+  { unClientSubscriptions = (unsub, topic) : unClientSubscriptions client }
+
+
+removeSubscription :: UUID -> Client -> Client
+removeSubscription topic client = client
+  { unClientSubscriptions = filter ((/= topic) . snd) $ unClientSubscriptions client }
