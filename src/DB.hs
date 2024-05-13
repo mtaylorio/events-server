@@ -63,7 +63,7 @@ upsertEvent :: Statement EventData ()
 upsertEvent = Statement sql encoder decoder True
   where
     sql = "INSERT INTO events \
-          \  (uuid, topic_uuid, created_at, data) \
+          \  (uuid, topic_uuid, created_at, payload) \
           \  VALUES ($1, $2, $3, $4) \
           \  ON CONFLICT (uuid) DO NOTHING"
     encoder = eventDataEncoder
