@@ -7,9 +7,13 @@ import Control.Concurrent.STM
 import Control.Exception (throwIO)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
+import Data.Time.Clock
 import Data.UUID
+import Hasql.Transaction
+import Hasql.Transaction.Sessions
 import Servant
 import qualified Data.Map as Map
+import qualified Hasql.Pool as Pool
 import qualified Network.WebSockets as WS
 import qualified Servant.Client as SC
 
@@ -20,6 +24,7 @@ import IAM.UserIdentifier
 import API
 import Auth
 import Client
+import DB
 import Event
 import State
 import Topic
@@ -86,14 +91,27 @@ sessionHandler _ _ _ = throwError err401
 
 
 createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createBroadcastTopicHandler state (Authenticated{}) topic = do
-  liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
-  return NoContent
-createBroadcastTopicHandler _ _ _ = throwError err401
+createBroadcastTopicHandler state (Authenticated{}) = createDBTopicHandler state True
+createBroadcastTopicHandler _ _ = \_ -> throwError err401
 
 
 createSendReceiveTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createSendReceiveTopicHandler state (Authenticated{}) topic = do
-  liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
-  return NoContent
-createSendReceiveTopicHandler _ _ _ = throwError err401
+createSendReceiveTopicHandler state (Authenticated{}) = createDBTopicHandler state False
+createSendReceiveTopicHandler _ _ = \_ -> throwError err401
+
+
+createDBTopicHandler :: State -> Bool -> UUID -> Handler NoContent
+createDBTopicHandler state broadcast topic = do
+  createdAt <- liftIO getCurrentTime
+  let db = unStateDatabase state
+  let stmt = statement (DBTopic topic broadcast createdAt) insertTopic
+  result <- liftIO $ Pool.use db $ transaction Serializable Read stmt
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error inserting topic: " ++ show err
+      throwError err500
+    Right _ -> do
+      if broadcast
+        then liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
+        else liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
+      return NoContent

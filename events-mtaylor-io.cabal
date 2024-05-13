@@ -30,12 +30,14 @@ library
       Client
       Command
       Config
+      DB
       Event
       Handlers
       Microseconds
       Server
       Server.API
       Server.App
+      Server.Init
       Server.Migrations
       Server.Session
       Socket
@@ -72,6 +74,7 @@ library
     , servant-server
     , stm
     , text
+    , time
     , unix
     , uuid
     , wai
@@ -115,6 +118,7 @@ executable events-mtaylor-io
     , servant-server
     , stm
     , text
+    , time
     , unix
     , uuid
     , wai
@@ -159,6 +163,7 @@ test-suite events-mtaylor-io-test
     , servant-server
     , stm
     , text
+    , time
     , unix
     , uuid
     , wai

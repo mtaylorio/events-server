@@ -43,6 +43,7 @@ dependencies:
 - servant-server
 - stm
 - text
+- time
 - unix
 - uuid
 - wai
