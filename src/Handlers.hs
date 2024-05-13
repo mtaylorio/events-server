@@ -4,7 +4,6 @@ module Handlers
   ) where
 
 import Control.Concurrent.STM
-import Control.Exception (throwIO)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import Data.Time.Clock
@@ -15,11 +14,6 @@ import Servant
 import qualified Data.Map as Map
 import qualified Hasql.Pool as Pool
 import qualified Network.WebSockets as WS
-import qualified Servant.Client as SC
-
-import IAM.Client
-import IAM.GroupIdentifier
-import IAM.UserIdentifier
 
 import API
 import Auth
@@ -55,23 +49,6 @@ handleUnsubscribe topic client = do
     ((unsub, _):_) -> do
       unsub
       atomically $ modifyTVar' client $ removeSubscription topic
-
-
-checkMembership :: State -> Client -> UUID -> IO ()
-checkMembership state client group = do
-  let uid = UserUUID $ unClientUser client
-      uident = UserIdentifier (Just uid) Nothing Nothing
-      gid = GroupUUID group
-      gident = GroupId gid
-      gclient = mkGroupClient gident
-      mclient = memberClient gclient uident
-      client' = getMembership mclient
-  result <- SC.runClientM client' (unStateClientEnv state)
-  case result of
-    Right NoContent ->
-      putStrLn "Membership check succeeded"
-    Left err -> do
-      throwIO $ userError $ "Membership check failed: " ++ show err
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse
