@@ -24,8 +24,29 @@ import Topic
 
 
 handlePublish :: State -> EventWrapper -> IO ()
-handlePublish state evt = publish (unStateTopics state) topic evt where
+handlePublish state evt = do
+  publish (unStateTopics state) topic evt
+  result0 <- Pool.use db $ transaction Serializable Read stmt0
+  case result0 of
+    Right (Just False) -> return ()
+    Right (Just True) -> do
+      result1 <- Pool.use db $ transaction Serializable Write stmt1
+      case result1 of
+        Left err -> do
+          putStrLn $ "Error inserting event: " ++ show err
+          return ()
+        Right _ -> return ()
+    Right Nothing -> do
+      putStrLn $ "Topic not found: " ++ show topic
+      return ()
+    Left err -> do
+      putStrLn $ "Error selecting topic: " ++ show err
+      return ()
+  where
+  stmt0 = statement (unEventTopic $ unEvent evt) selectTopicLogEvents
+  stmt1 = statement (unEvent evt) upsertEvent
   topic = unEventTopic $ unEvent evt
+  db = unStateDatabase state
 
 
 handleSubscribe :: State -> UUID -> TVar Client -> IO ()
