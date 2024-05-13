@@ -81,11 +81,11 @@ createDBTopicHandler :: State -> Bool -> UUID -> Handler NoContent
 createDBTopicHandler state broadcast topic = do
   createdAt <- liftIO getCurrentTime
   let db = unStateDatabase state
-  let stmt = statement (DBTopic topic broadcast createdAt) insertTopic
+  let stmt = statement (DBTopic topic broadcast createdAt) upsertTopic
   result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
   case result of
     Left err -> do
-      liftIO $ putStrLn $ "Error inserting topic: " ++ show err
+      liftIO $ putStrLn $ "Error upserting topic: " ++ show err
       throwError err500
     Right _ -> do
       if broadcast

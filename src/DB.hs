@@ -18,20 +18,21 @@ data DBTopic = DBTopic
   } deriving (Show)
 
 
-insertTopic :: Statement DBTopic ()
-insertTopic = Statement sql encoder decoder True
-  where
-    sql = "INSERT INTO topics (uuid, broadcast, created_at) VALUES ($1, $2, $3)"
-    encoder = topicEncoder
-    decoder = D.noResult
-
-
 selectTopics :: Statement () [DBTopic]
 selectTopics = Statement sql encoder decoder True
   where
     sql = "SELECT uuid, broadcast, created_at FROM topics"
     encoder = E.noParams
     decoder = D.rowList topicDecoder
+
+
+upsertTopic :: Statement DBTopic ()
+upsertTopic = Statement sql encoder decoder True
+  where
+    sql = "INSERT INTO topics (uuid, broadcast, created_at) VALUES ($1, $2, $3) \
+          \ON CONFLICT (uuid) DO UPDATE SET broadcast = $2"
+    encoder = topicEncoder
+    decoder = D.noResult
 
 
 topicDecoder :: D.Row DBTopic
