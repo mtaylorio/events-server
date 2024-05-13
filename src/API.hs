@@ -10,19 +10,21 @@ import Data.UUID
 import Servant
 
 
-newtype SessionResponse = SessionResponse
-  { sessionResponseSession :: UUID
+data SessionResponse = SessionResponse
+  { sessionResponseUser :: UUID
+  , sessionResponseSession :: UUID
+  , sessionResponseTopics :: [UUID]
   } deriving (Eq, Show)
 
 
 instance ToJSON SessionResponse where
-  toJSON (SessionResponse session) = object ["session" .= session]
+  toJSON (SessionResponse user session topics) =
+    object ["user" .= user, "session" .= session, "topics" .= topics]
 
 
 instance FromJSON SessionResponse where
-  parseJSON = withObject "SessionResponse" $ \o -> do
-    session <- o .: "session"
-    return $ SessionResponse session
+  parseJSON = withObject "SessionResponse" $ \o ->
+    SessionResponse <$> o .: "user" <*> o .: "session" <*> o .: "topics"
 
 
 newtype SessionsResponse

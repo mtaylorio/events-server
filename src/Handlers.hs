@@ -62,8 +62,11 @@ sessionHandler :: State -> Auth -> UUID -> Handler SessionResponse
 sessionHandler state (Authenticated{}) session = do
   clients <- liftIO $ readTVarIO $ unStateClients state
   case Map.lookup session clients of
-    Just _ -> return $ SessionResponse session
     Nothing -> throwError err404
+    Just client -> do
+      client' <- liftIO $ readTVarIO client
+      let user = unClientUser client'
+      return $ SessionResponse user session $ listSubscriptions client'
 sessionHandler _ _ _ = throwError err401
 
 

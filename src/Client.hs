@@ -4,6 +4,7 @@ module Client
   , disconnected
   , addSubscription
   , removeSubscription
+  , listSubscriptions
   , Client(..)
   , ClientHello(..)
   ) where
@@ -51,6 +52,10 @@ newClient conn (ClientHello user token session) = Client conn user token session
 
 disconnected :: Client -> IO ()
 disconnected client = mapM_ fst $ unClientSubscriptions client
+
+
+listSubscriptions :: Client -> [UUID]
+listSubscriptions = map snd . unClientSubscriptions
 
 
 addSubscription :: UUID -> Unsubscribe -> Client -> Client
