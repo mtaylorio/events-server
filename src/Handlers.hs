@@ -82,7 +82,7 @@ createDBTopicHandler state broadcast topic = do
   createdAt <- liftIO getCurrentTime
   let db = unStateDatabase state
   let stmt = statement (DBTopic topic broadcast createdAt) insertTopic
-  result <- liftIO $ Pool.use db $ transaction Serializable Read stmt
+  result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error inserting topic: " ++ show err
