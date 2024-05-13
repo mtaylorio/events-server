@@ -22,7 +22,7 @@ data State = State
   , unStateClientEnv :: !SC.ClientEnv
   , unStateDatabase :: !Pool.Pool
   , unStateClients :: !(TVar (Map UUID (TVar Client)))
-  , unStateTopics :: !(TopicManager UUID EventData)
+  , unStateTopics :: !(TopicManager UUID EventWrapper)
   }
 
 

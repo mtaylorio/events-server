@@ -5,7 +5,6 @@ module Handlers
 
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
-import Data.Aeson
 import Data.Time.Clock
 import Data.UUID
 import Hasql.Transaction
@@ -24,8 +23,9 @@ import State
 import Topic
 
 
-handlePublish :: State -> UUID -> UUID -> EventData -> IO ()
-handlePublish state topic _ = publish (unStateTopics state) topic
+handlePublish :: State -> EventWrapper -> IO ()
+handlePublish state evt = publish (unStateTopics state) topic evt where
+  topic = unEventTopic $ unEvent evt
 
 
 handleSubscribe :: State -> UUID -> TVar Client -> IO ()
@@ -35,10 +35,10 @@ handleSubscribe state topic client = do
     Just unsub -> atomically $ modifyTVar' client $ addSubscription topic unsub
     Nothing -> return ()
   where
-  handleEvent :: EventData -> IO ()
-  handleEvent eventData = do
+  handleEvent :: EventWrapper -> IO ()
+  handleEvent evt = do
     client' <- readTVarIO client
-    WS.sendTextData (unClientConn client') (encode eventData)
+    WS.sendTextData (unClientConn client') (unEventBytes evt)
 
 
 handleUnsubscribe :: UUID -> TVar Client -> IO ()
@@ -68,17 +68,17 @@ sessionHandler _ _ _ = throwError err401
 
 
 createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createBroadcastTopicHandler state (Authenticated{}) = createDBTopicHandler state True
+createBroadcastTopicHandler state (Authenticated{}) = createTopicHandler state True
 createBroadcastTopicHandler _ _ = \_ -> throwError err401
 
 
 createSendReceiveTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createSendReceiveTopicHandler state (Authenticated{}) = createDBTopicHandler state False
+createSendReceiveTopicHandler state (Authenticated{}) = createTopicHandler state False
 createSendReceiveTopicHandler _ _ = \_ -> throwError err401
 
 
-createDBTopicHandler :: State -> Bool -> UUID -> Handler NoContent
-createDBTopicHandler state broadcast topic = do
+createTopicHandler :: State -> Bool -> UUID -> Handler NoContent
+createTopicHandler state broadcast topic = do
   createdAt <- liftIO getCurrentTime
   let db = unStateDatabase state
   let stmt = statement (DBTopic topic broadcast createdAt) upsertTopic
