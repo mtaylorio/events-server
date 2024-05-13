@@ -30,8 +30,8 @@ import State
 import Topic
 
 
-handlePublish :: State -> UUID -> EventData -> IO ()
-handlePublish state = publish (unStateTopics state)
+handlePublish :: State -> UUID -> UUID -> EventData -> IO ()
+handlePublish state topic _ = publish (unStateTopics state) topic
 
 
 handleSubscribe :: State -> UUID -> TVar Client -> IO ()

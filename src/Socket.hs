@@ -84,8 +84,8 @@ websocketLoop state client conn = do
   case decode evtBytes of
     Just evt ->
       case evt of
-        EventPublish topic data' -> do
-          handlePublish state topic data'
+        EventPublish topic event data' -> do
+          handlePublish state topic event data'
         EventSubscribe topic -> do
           handleSubscribe state topic client
         EventUnsubscribe topic -> do
