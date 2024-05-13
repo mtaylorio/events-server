@@ -82,9 +82,9 @@ createSendReceiveTopicHandler _ _ = \_ -> throwError err401
 
 createTopicHandler :: State -> Bool -> UUID -> Handler NoContent
 createTopicHandler state broadcast topic = do
-  createdAt <- liftIO getCurrentTime
+  now <- liftIO getCurrentTime
   let db = unStateDatabase state
-  let stmt = statement (DBTopic topic broadcast createdAt) upsertTopic
+  let stmt = statement (DBTopic topic broadcast False now) upsertTopicBroadcast
   result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
   case result of
     Left err -> do
@@ -94,4 +94,27 @@ createTopicHandler state broadcast topic = do
       if broadcast
         then liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
         else liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
+      return NoContent
+
+
+logEventsHandler :: State -> Auth -> UUID -> Handler NoContent
+logEventsHandler state (Authenticated{}) = setLogEventsHandler state True
+logEventsHandler _ _ = \_ -> throwError err401
+
+
+deleteLogEventsHandler :: State -> Auth -> UUID -> Handler NoContent
+deleteLogEventsHandler state (Authenticated{}) = setLogEventsHandler state False
+deleteLogEventsHandler _ _ = \_ -> throwError err401
+
+
+setLogEventsHandler :: State -> Bool -> UUID -> Handler NoContent
+setLogEventsHandler state logEvents topic = do
+  let db = unStateDatabase state
+  let stmt = statement (topic, logEvents) updateTopicLogEvents
+  result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error upserting event: " ++ show err
+      throwError err500
+    Right _ ->
       return NoContent

@@ -1,0 +1,3 @@
+
+
+ALTER TABLE "topics" ADD COLUMN "log_events" BOOLEAN NOT NULL DEFAULT FALSE;

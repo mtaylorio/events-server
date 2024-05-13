@@ -21,3 +21,8 @@ topicsServer :: State -> Auth -> Server TopicsAPI
 topicsServer state auth topic
   = createBroadcastTopicHandler state auth topic
   :<|> createSendReceiveTopicHandler state auth topic
+  :<|> eventsHandlers
+  where
+  eventsHandlers
+    = logEventsHandler state auth topic
+    :<|> deleteLogEventsHandler state auth topic

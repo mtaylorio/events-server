@@ -24,7 +24,9 @@ initServer state = do
 
 
 initQueue :: State -> DBTopic -> IO ()
-initQueue state (DBTopic topicId True _) =
-  atomically $ createBroadcastTopic (unStateTopics state) topicId
-initQueue state (DBTopic topicId False _) =
-  atomically $ createSendReceiveTopic (unStateTopics state) topicId
+initQueue state dbTopic =
+  if dbTopicBroadcast dbTopic
+    then atomically $ createBroadcastTopic (unStateTopics state) topicId
+    else atomically $ createSendReceiveTopic (unStateTopics state) topicId
+  where
+    topicId = dbTopicId dbTopic

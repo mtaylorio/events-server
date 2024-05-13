@@ -50,6 +50,7 @@ type API = AuthProtect "signature-auth" :>
 
 
 type TopicsAPI = Capture "topic" UUID :>
-  ( "broadcast" :> PutNoContent
-  :<|> "send-receive" :> PutNoContent
+  ( "broadcast" :> PostNoContent
+  :<|> "send-receive" :> PostNoContent
+  :<|> "log-events" :> ( PostNoContent :<|> DeleteNoContent )
   )
