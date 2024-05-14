@@ -17,17 +17,6 @@ steps:
     registry: images.home.mtaylor.io
     tags:
     - main
-- name: build-image
-  image: images.home.mtaylor.io/drone-kaniko:latest
-  settings:
-    repo: images.home.mtaylor.io/events-mtaylor-io
-    dockerfile: Dockerfile.build
-    enable_cache: true
-    username: anonymous
-    password: anonymous
-    registry: images.home.mtaylor.io
-    tags:
-    - buildV1
 trigger:
   branch:
   - main
@@ -38,6 +27,10 @@ kind: pipeline
 type: kubernetes
 name: release
 steps:
+- name: build
+  image: images.home.mtaylor.io/events-mtaylor-io:buildV1
+  commands:
+  - stack build --allow-different-user --copy-bins --local-bin-path .
 - name: image
   image: images.home.mtaylor.io/drone-kaniko:latest
   settings:
@@ -68,6 +61,17 @@ steps:
   when:
     event:
     - tag
+- name: build-image
+  image: images.home.mtaylor.io/drone-kaniko:latest
+  settings:
+    repo: images.home.mtaylor.io/events-mtaylor-io
+    dockerfile: Dockerfile.build
+    enable_cache: true
+    username: anonymous
+    password: anonymous
+    registry: images.home.mtaylor.io
+    tags:
+    - build
 trigger:
   event:
   - tag
