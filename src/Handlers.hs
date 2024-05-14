@@ -5,6 +5,7 @@ module Handlers
 
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
 import Data.Time.Clock
 import Data.UUID
 import Hasql.Transaction
@@ -70,6 +71,20 @@ handleUnsubscribe topic client = do
     ((unsub, _):_) -> do
       unsub
       atomically $ modifyTVar' client $ removeSubscription topic
+
+
+handleReplay :: State -> UUID -> TVar Client -> IO ()
+handleReplay state topic client = do
+  let db = unStateDatabase state
+      stmt = statement topic selectEvents
+  result <- Pool.use db $ transaction Serializable Read stmt
+  case result of
+    Right events -> do
+      client' <- readTVarIO client
+      mapM_ (WS.sendTextData (unClientConn client') . encode) events
+    Left err -> do
+      putStrLn $ "Error selecting events: " ++ show err
+      return ()
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse

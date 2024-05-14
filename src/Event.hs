@@ -42,6 +42,7 @@ data Event
   = EventPublish !EventData
   | EventSubscribe !UUID
   | EventUnsubscribe !UUID
+  | EventReplay !UUID
   deriving (Eq, Show)
 
 
@@ -53,6 +54,7 @@ instance FromJSON Event where
       Just "publish" -> EventPublish <$> parseJSON (Object o)
       Just "subscribe" -> EventSubscribe <$> o .: "topic"
       Just "unsubscribe" -> EventUnsubscribe <$> o .: "topic"
+      Just "replay" -> EventReplay <$> o .: "topic"
       Just _ -> fail "unknown event type"
 
 
@@ -63,6 +65,8 @@ instance ToJSON Event where
     object ["type" .= ("subscribe" :: Text), "topic" .= topic]
   toJSON (EventUnsubscribe topic) =
     object ["type" .= ("unsubscribe" :: Text), "topic" .= topic]
+  toJSON (EventReplay topic) =
+    object ["type" .= ("replay" :: Text), "topic" .= topic]
 
 
 data EventWrapper = EventWrapper
