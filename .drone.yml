@@ -3,20 +3,20 @@ kind: pipeline
 type: kubernetes
 name: build
 steps:
-# - name: build
-#   image: images.home.mtaylor.io/events-mtaylor-io:build
-#   commands:
-#   - stack build --copy-bins --local-bin-path .
-# - name: image
-#   image: images.home.mtaylor.io/drone-kaniko:latest
-#   settings:
-#     repo: images.home.mtaylor.io/events-mtaylor-io
-#     enable_cache: true
-#     username: anonymous
-#     password: anonymous
-#     registry: images.home.mtaylor.io
-#     tags:
-#     - main
+- name: build
+  image: images.home.mtaylor.io/events-mtaylor-io:build
+  commands:
+  - stack build --copy-bins --local-bin-path .
+- name: image
+  image: images.home.mtaylor.io/drone-kaniko:latest
+  settings:
+    repo: images.home.mtaylor.io/events-mtaylor-io
+    enable_cache: true
+    username: anonymous
+    password: anonymous
+    registry: images.home.mtaylor.io
+    tags:
+    - main
 - name: build-image
   image: images.home.mtaylor.io/drone-kaniko:latest
   settings:
