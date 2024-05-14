@@ -84,7 +84,7 @@ selectTopics = Statement sql encoder decoder True
 selectEvents :: Statement UUID [EventData]
 selectEvents = Statement sql encoder decoder True
   where
-    sql = "SELECT (uuid, topic_uuid, created_at, payload) \
+    sql = "SELECT uuid, topic_uuid, created_at, payload \
           \  FROM events WHERE topic_uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
     decoder = D.rowList eventDataDecoder
