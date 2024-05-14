@@ -9,3 +9,6 @@ resources:
 - service.yml
 secretGenerator:
 - name: events-mtaylor-io
+images:
+- name: images.home.mtaylor.io/events-mtaylor-io
+  newTag: 0.1.10
