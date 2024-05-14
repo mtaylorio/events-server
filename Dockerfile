@@ -1,7 +1,7 @@
 FROM alpine:3.19
 # Install system dependencies
 USER root
-RUN apk add --no-cache libpq zlib \
+RUN apk add --no-cache gmp libpq zlib \
   && adduser --system --no-create-home --uid 1000 iam
 # Add the built executables
 ADD events-mtaylor-io /usr/local/bin/events-mtaylor-io
