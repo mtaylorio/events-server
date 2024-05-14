@@ -1,8 +1,7 @@
-FROM images.home.mtaylor.io/base:latest AS runtime
+FROM alpine:3.19
 # Install system dependencies
 USER root
-RUN apt-get update && apt-get install -y libpq5 zlib1g \
-  && apt-get clean && rm -rf /var/lib/apt/lists/* \
+RUN apk add --no-cache libpq zlib \
   && adduser --system --no-create-home --uid 1000 iam
 # Add the built executables
 ADD events-mtaylor-io /usr/local/bin/events-mtaylor-io
