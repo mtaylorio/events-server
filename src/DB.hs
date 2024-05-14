@@ -5,14 +5,60 @@ module DB
 
 import Data.Aeson (Value(..))
 import Data.Functor.Contravariant ((>$<))
+import Data.Text.Encoding (encodeUtf8)
 import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
 import Hasql.Statement (Statement(..))
+import Hasql.Transaction (Transaction, statement)
+import Hasql.Transaction.Sessions
 import qualified Data.Aeson.KeyMap as KM
+import qualified Hasql.Connection as Connection
 import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
+import qualified Hasql.Pool as Pool
 
+import Config (ConfigPostgres(..))
 import Event
+
+
+connectToDatabase :: ConfigPostgres -> IO Pool.Pool
+connectToDatabase conf = do
+  let settings = Connection.settings
+        (encodeUtf8 $ configPostgresHost conf)
+        (fromIntegral $ configPostgresPort conf)
+        (encodeUtf8 $ configPostgresUser conf)
+        (encodeUtf8 $ configPostgresPass conf)
+        (encodeUtf8 $ configPostgresDb conf)
+  Pool.acquire 3 1800 1800 settings
+
+
+queryTopics :: Transaction [DBTopic]
+queryTopics = statement () selectTopics
+
+
+queryEvents :: UUID -> Transaction [EventData]
+queryEvents topicId = statement topicId selectEvents
+
+
+queryTopicLogEvents :: UUID -> Transaction (Maybe Bool)
+queryTopicLogEvents topicId = statement topicId selectTopicLogEvents
+
+
+updateTopicLogEvents :: UUID -> Bool -> Transaction ()
+updateTopicLogEvents topicId logEvents =
+  statement (topicId, logEvents) updateTopicLogEvents'
+
+
+upsertEvent :: EventData -> Transaction ()
+upsertEvent evt = statement evt insertOnConflictUpdateEvent
+
+
+upsertTopicBroadcast :: DBTopic -> Transaction ()
+upsertTopicBroadcast topic = statement topic insertOnConflictUpdateTopicBroadcast
+
+
+runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
+runQuery pool tx = Pool.use pool $ transaction Serializable Read tx
 
 
 data DBTopic = DBTopic
@@ -48,16 +94,16 @@ selectTopicLogEvents = Statement sql encoder decoder True
     decoder = D.rowMaybe (D.column (D.nonNullable D.bool))
 
 
-updateTopicLogEvents :: Statement (UUID, Bool) ()
-updateTopicLogEvents = Statement sql encoder decoder True
+updateTopicLogEvents' :: Statement (UUID, Bool) ()
+updateTopicLogEvents' = Statement sql encoder decoder True
   where
     sql = "UPDATE topics SET log_events = $2 WHERE uuid = $1"
     encoder = uuidBoolEncoder
     decoder = D.noResult
 
 
-upsertTopicBroadcast :: Statement DBTopic ()
-upsertTopicBroadcast = Statement sql encoder decoder True
+insertOnConflictUpdateTopicBroadcast :: Statement DBTopic ()
+insertOnConflictUpdateTopicBroadcast = Statement sql encoder decoder True
   where
     sql = "INSERT INTO topics \
           \  (uuid, broadcast, log_events, created_at) \
@@ -68,8 +114,8 @@ upsertTopicBroadcast = Statement sql encoder decoder True
     decoder = D.noResult
 
 
-upsertEvent :: Statement EventData ()
-upsertEvent = Statement sql encoder decoder True
+insertOnConflictUpdateEvent :: Statement EventData ()
+insertOnConflictUpdateEvent = Statement sql encoder decoder True
   where
     sql = "INSERT INTO events \
           \  (uuid, topic_uuid, created_at, payload) \
@@ -106,15 +152,10 @@ eventDataDecoder = EventData
   <$> D.column (D.nonNullable D.uuid)
   <*> D.column (D.nonNullable D.uuid)
   <*> D.column (D.nonNullable D.timestamptz)
-  <*> jsonKeyMapValueDecoder
-
-
-jsonKeyMapValueDecoder :: D.Row (KM.KeyMap Value)
-jsonKeyMapValueDecoder = do
-  json <- D.column (D.nonNullable D.jsonb)
-  case json of
-    (Object o) -> return o
-    _ -> fail "expected JSON object"
+  <*> (jsonValueToObject <$> D.column (D.nonNullable D.jsonb))
+  where
+    jsonValueToObject (Object obj) = obj
+    jsonValueToObject _ = KM.empty
 
 
 eventDataEncoder :: E.Params EventData

@@ -8,11 +8,8 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import Data.Time.Clock
 import Data.UUID
-import Hasql.Transaction
-import Hasql.Transaction.Sessions
 import Servant
 import qualified Data.Map as Map
-import qualified Hasql.Pool as Pool
 import qualified Network.WebSockets as WS
 
 import API
@@ -27,11 +24,11 @@ import Topic
 handlePublish :: State -> EventWrapper -> IO ()
 handlePublish state evt = do
   publish (unStateTopics state) topic evt
-  result0 <- Pool.use db $ transaction Serializable Read stmt0
+  result0 <- runQuery db $ queryTopicLogEvents topic
   case result0 of
     Right (Just False) -> return ()
     Right (Just True) -> do
-      result1 <- Pool.use db $ transaction Serializable Write stmt1
+      result1 <- runQuery db $ upsertEvent $ unEvent evt
       case result1 of
         Left err -> do
           putStrLn $ "Error inserting event: " ++ show err
@@ -44,8 +41,6 @@ handlePublish state evt = do
       putStrLn $ "Error selecting topic: " ++ show err
       return ()
   where
-  stmt0 = statement (unEventTopic $ unEvent evt) selectTopicLogEvents
-  stmt1 = statement (unEvent evt) upsertEvent
   topic = unEventTopic $ unEvent evt
   db = unStateDatabase state
 
@@ -75,9 +70,7 @@ handleUnsubscribe topic client = do
 
 handleReplay :: State -> UUID -> TVar Client -> IO ()
 handleReplay state topic client = do
-  let db = unStateDatabase state
-      stmt = statement topic selectEvents
-  result <- Pool.use db $ transaction Serializable Read stmt
+  result <- runQuery db $ queryEvents topic
   case result of
     Right events -> do
       client' <- readTVarIO client
@@ -85,6 +78,8 @@ handleReplay state topic client = do
     Left err -> do
       putStrLn $ "Error selecting events: " ++ show err
       return ()
+  where
+  db = unStateDatabase state
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse
@@ -119,9 +114,8 @@ createSendReceiveTopicHandler _ _ = \_ -> throwError err401
 createTopicHandler :: State -> Bool -> UUID -> Handler NoContent
 createTopicHandler state broadcast topic = do
   now <- liftIO getCurrentTime
-  let db = unStateDatabase state
-  let stmt = statement (DBTopic topic broadcast False now) upsertTopicBroadcast
-  result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
+  let dbTopic = DBTopic topic broadcast False now
+  result <- liftIO $ runQuery db $ upsertTopicBroadcast dbTopic
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting topic: " ++ show err
@@ -131,6 +125,8 @@ createTopicHandler state broadcast topic = do
         then liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
         else liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
       return NoContent
+  where
+  db = unStateDatabase state
 
 
 logEventsHandler :: State -> Auth -> UUID -> Handler NoContent
@@ -145,12 +141,12 @@ deleteLogEventsHandler _ _ = \_ -> throwError err401
 
 setLogEventsHandler :: State -> Bool -> UUID -> Handler NoContent
 setLogEventsHandler state logEvents topic = do
-  let db = unStateDatabase state
-  let stmt = statement (topic, logEvents) updateTopicLogEvents
-  result <- liftIO $ Pool.use db $ transaction Serializable Write stmt
+  result <- liftIO $ runQuery db $ updateTopicLogEvents topic logEvents
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting event: " ++ show err
       throwError err500
     Right _ ->
       return NoContent
+  where
+  db = unStateDatabase state
