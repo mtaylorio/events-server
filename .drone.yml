@@ -7,6 +7,7 @@ steps:
   pull: always
   image: images.home.mtaylor.io/events-mtaylor-io:build
   commands:
+  - ln -s /build/.stack-work /drone/src/.stack-work
   - stack build --allow-different-user --copy-bins --local-bin-path .
 - name: image
   image: images.home.mtaylor.io/drone-kaniko:latest
@@ -32,6 +33,7 @@ steps:
   pull: always
   image: images.home.mtaylor.io/events-mtaylor-io:build
   commands:
+  - ln -s /build/.stack-work /drone/src/.stack-work
   - stack build --allow-different-user --copy-bins --local-bin-path .
 - name: image
   image: images.home.mtaylor.io/drone-kaniko:latest
