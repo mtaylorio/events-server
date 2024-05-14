@@ -1,9 +1,10 @@
 FROM images.home.mtaylor.io/haskell:latest
 # Install system dependencies
 USER root
-RUN apt-get update && apt-get install -y libpq-dev zlib1g-dev \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache libpq-dev zlib-dev
+# Create build workspace
+RUN mkdir /build
+WORKDIR /build
 # Add metadata files and build dependencies
-USER build
-ADD --chown=build:build . .
+ADD . .
 RUN stack build --system-ghc --copy-bins
