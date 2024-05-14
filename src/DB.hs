@@ -61,6 +61,10 @@ runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
 runQuery pool tx = Pool.use pool $ transaction Serializable Read tx
 
 
+runUpdate :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
+runUpdate pool tx = Pool.use pool $ transaction Serializable Write tx
+
+
 data DBTopic = DBTopic
   { dbTopicId :: UUID
   , dbTopicBroadcast :: Bool

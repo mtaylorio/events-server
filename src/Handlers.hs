@@ -28,7 +28,7 @@ handlePublish state evt = do
   case result0 of
     Right (Just False) -> return ()
     Right (Just True) -> do
-      result1 <- runQuery db $ upsertEvent $ unEvent evt
+      result1 <- runUpdate db $ upsertEvent $ unEvent evt
       case result1 of
         Left err -> do
           putStrLn $ "Error inserting event: " ++ show err
@@ -115,7 +115,7 @@ createTopicHandler :: State -> Bool -> UUID -> Handler NoContent
 createTopicHandler state broadcast topic = do
   now <- liftIO getCurrentTime
   let dbTopic = DBTopic topic broadcast False now
-  result <- liftIO $ runQuery db $ upsertTopicBroadcast dbTopic
+  result <- liftIO $ runUpdate db $ upsertTopicBroadcast dbTopic
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting topic: " ++ show err
@@ -141,7 +141,7 @@ deleteLogEventsHandler _ _ = \_ -> throwError err401
 
 setLogEventsHandler :: State -> Bool -> UUID -> Handler NoContent
 setLogEventsHandler state logEvents topic = do
-  result <- liftIO $ runQuery db $ updateTopicLogEvents topic logEvents
+  result <- liftIO $ runUpdate db $ updateTopicLogEvents topic logEvents
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting event: " ++ show err
