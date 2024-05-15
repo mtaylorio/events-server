@@ -6,18 +6,10 @@ module Socket
 import Control.Concurrent.STM
 import Control.Exception (catch, throwIO)
 import Data.Aeson
-import Data.Text (Text)
 import System.IO
 import qualified Network.WebSockets as WS
-import qualified Servant.Client as SC
-
-import IAM.Authorization
-import IAM.Client
-import IAM.Policy (Action(Read), Effect(Allow, Deny))
-import IAM.UserIdentifier
 
 import Client
-import Config
 import Event
 import Socket.Handlers
 import State
@@ -52,28 +44,8 @@ websocketHandshake state pending = do
   clientHelloBytes <- WS.receiveData conn
   case decode clientHelloBytes of
     Just clientHello -> do
-      let uid = UserUUID $ unClientHelloUser clientHello
-          uident = UserIdentifier (Just uid) Nothing Nothing
-          client = authorizeClient $ AuthorizationRequest
-            { authorizationRequestUser = uident
-            , authorizationRequestHost = configHost $ unStateConfig state
-            , authorizationRequestAction = Read
-            , authorizationRequestResource = "/"
-            , authorizationRequestToken = Just $ unClientHelloToken clientHello
-            }
-      result <- SC.runClientM client (unStateClientEnv state)
-      case result of
-        Right (AuthorizationResponse Allow) -> do
-          client' <- atomically $ insertClient state $ newClient conn clientHello
-          return (client', conn)
-        Right (AuthorizationResponse Deny) -> do
-          WS.sendClose conn ("Authorization denied" :: Text)
-          throwIO $ userError "Authorization denied"
-        Left err -> do
-          putStrLn $ "Authorization failed: " ++ show err
-          hFlush stdout
-          WS.sendClose conn ("Authorization failed" :: Text)
-          throwIO $ userError "Authorization failed"
+      client' <- atomically $ insertClient state $ newClient conn clientHello
+      return (client', conn)
     Nothing ->
       throwIO $ userError "Expected a ClientHello message"
 
@@ -85,7 +57,7 @@ websocketLoop state client conn = do
     Just evt ->
       case evt of
         EventPublish data' ->
-          handlePublish state $ EventWrapper evtBytes data'
+          handlePublish state client $ EventWrapper evtBytes data'
         EventSubscribe topic ->
           handleSubscribe state topic client
         EventUnsubscribe topic ->

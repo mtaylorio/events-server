@@ -41,6 +41,7 @@ library
       Server.Migrations
       Server.Session
       Socket
+      Socket.Auth
       Socket.Handlers
       State
       Topic
