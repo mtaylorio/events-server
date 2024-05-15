@@ -12,9 +12,9 @@ import qualified Network.Wai.Handler.WebSockets as WaiWS
 import qualified Network.WebSockets as WS
 
 import API
-import Auth
 import Config
 import Server.API
+import Server.Auth
 import Socket (websocketHandler)
 import State
 

@@ -19,7 +19,7 @@ import IAM.UserIdentifier
 import Client
 import Config
 import Event
-import Handlers
+import Socket.Handlers
 import State
 
 

@@ -5,8 +5,8 @@ module Server.API
 import Servant
 
 import API
-import Auth
-import Handlers
+import Server.Auth
+import Server.Handlers
 import State
 
 

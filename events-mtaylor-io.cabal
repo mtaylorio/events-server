@@ -26,21 +26,22 @@ source-repository head
 library
   exposed-modules:
       API
-      Auth
       Client
       Command
       Config
       DB
       Event
-      Handlers
       Microseconds
       Server
       Server.API
       Server.App
+      Server.Auth
+      Server.Handlers
       Server.Init
       Server.Migrations
       Server.Session
       Socket
+      Socket.Handlers
       State
       Topic
   other-modules:
