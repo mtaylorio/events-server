@@ -49,7 +49,7 @@ authorizeTopic state client action topicId = do
   host = configHost $ unStateConfig state
 
   resource :: Text
-  resource = "topic/" <> toText topicId
+  resource = "/topics/" <> toText topicId
 
   token :: Text
   token = unClientToken client
