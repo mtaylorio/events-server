@@ -21,6 +21,7 @@ server state auth
 topicsServer :: State -> Auth -> Server TopicsAPI
 topicsServer state auth
   = topicsHandler state auth
+  :<|> createTopicInfoHandler state auth
   :<|> topicServer state auth
 
 

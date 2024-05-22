@@ -53,6 +53,25 @@ topicsHandler state (Authenticated{}) = do
 topicsHandler _ _ = throwError err401
 
 
+createTopicInfoHandler :: State -> Auth -> TopicInfo -> Handler NoContent
+createTopicInfoHandler state (Authenticated{}) topicInfo = do
+  result <- liftIO $ runUpdate db $ upsertTopic dbTopic
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error upserting topic: " ++ show err
+      throwError err500
+    Right _ -> do
+      return NoContent
+  where
+  db = unStateDatabase state
+  dbTopic = DBTopic
+    (topicInfoId topicInfo)
+    (topicInfoBroadcast topicInfo)
+    (topicInfoLogEvents topicInfo)
+    (topicInfoCreatedAt topicInfo)
+createTopicInfoHandler _ _ _ = throwError err401
+
+
 createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
 createBroadcastTopicHandler state (Authenticated{}) = createTopicHandler state True
 createBroadcastTopicHandler _ _ = \_ -> throwError err401

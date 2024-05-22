@@ -53,6 +53,10 @@ upsertEvent :: EventData -> Transaction ()
 upsertEvent evt = statement evt insertOnConflictUpdateEvent
 
 
+upsertTopic :: DBTopic -> Transaction ()
+upsertTopic topic = statement topic insertOnConflictUpdateTopic
+
+
 upsertTopicBroadcast :: DBTopic -> Transaction ()
 upsertTopicBroadcast topic = statement topic insertOnConflictUpdateTopicBroadcast
 
@@ -103,6 +107,19 @@ updateTopicLogEvents' = Statement sql encoder decoder True
   where
     sql = "UPDATE topics SET log_events = $2 WHERE uuid = $1"
     encoder = uuidBoolEncoder
+    decoder = D.noResult
+
+
+insertOnConflictUpdateTopic :: Statement DBTopic ()
+insertOnConflictUpdateTopic = Statement sql encoder decoder True
+  where
+    sql = "INSERT INTO topics \
+          \  (uuid, broadcast, log_events, created_at) \
+          \  VALUES ($1, $2, $3, $4) \
+          \  ON CONFLICT (uuid) DO UPDATE SET \
+          \  broadcast = EXCLUDED.broadcast, \
+          \  log_events = EXCLUDED.log_events"
+    encoder = topicEncoder
     decoder = D.noResult
 
 
