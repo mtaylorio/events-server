@@ -45,11 +45,11 @@ topicsHandler state (Authenticated{}) = do
       liftIO $ putStrLn $ "Error querying topics: " ++ show err
       throwError err500
     Right topics' -> do
-      return $ TopicsResponse $ map topicResponse topics'
+      return $ TopicsResponse $ map topicInfo topics'
   where
   db = unStateDatabase state
-  topicResponse (DBTopic topic broadcast logEvents created) =
-    TopicResponse topic broadcast logEvents created
+  topicInfo (DBTopic topic broadcast logEvents created) =
+    TopicInfo topic broadcast logEvents created
 topicsHandler _ _ = throwError err401
 
 
