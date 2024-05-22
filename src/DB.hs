@@ -80,7 +80,7 @@ data DBTopic = DBTopic
 selectTopics :: Statement () [DBTopic]
 selectTopics = Statement sql encoder decoder True
   where
-    sql = "SELECT (uuid, broadcast, log_events, created_at) FROM topics"
+    sql = "SELECT uuid, broadcast, log_events, created_at FROM topics"
     encoder = E.noParams
     decoder = D.rowList topicDecoder
 
