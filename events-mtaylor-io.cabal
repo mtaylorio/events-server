@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       API
+      API.Sessions
+      API.Topics
       Client
       Command
       Config

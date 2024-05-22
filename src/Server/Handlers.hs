@@ -37,6 +37,22 @@ sessionHandler state (Authenticated{}) session = do
 sessionHandler _ _ _ = throwError err401
 
 
+topicsHandler :: State -> Auth -> Handler TopicsResponse
+topicsHandler state (Authenticated{}) = do
+  topics <- liftIO $ runQuery db queryTopics
+  case topics of
+    Left err -> do
+      liftIO $ putStrLn $ "Error querying topics: " ++ show err
+      throwError err500
+    Right topics' -> do
+      return $ TopicsResponse $ map topicResponse topics'
+  where
+  db = unStateDatabase state
+  topicResponse (DBTopic topic broadcast logEvents created) =
+    TopicResponse topic broadcast logEvents created
+topicsHandler _ _ = throwError err401
+
+
 createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
 createBroadcastTopicHandler state (Authenticated{}) = createTopicHandler state True
 createBroadcastTopicHandler _ _ = \_ -> throwError err401

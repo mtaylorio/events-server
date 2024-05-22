@@ -2,6 +2,7 @@ module Server.API
   ( module Server.API
   ) where
 
+import Data.UUID
 import Servant
 
 import API
@@ -18,7 +19,13 @@ server state auth
 
 
 topicsServer :: State -> Auth -> Server TopicsAPI
-topicsServer state auth topic
+topicsServer state auth
+  = topicsHandler state auth
+  :<|> topicServer state auth
+
+
+topicServer :: State -> Auth -> UUID -> Server TopicAPI
+topicServer state auth topic
   = createBroadcastTopicHandler state auth topic
   :<|> createSendReceiveTopicHandler state auth topic
   :<|> eventsHandlers

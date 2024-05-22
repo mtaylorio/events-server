@@ -1,45 +1,16 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE OverloadedStrings #-}
 module API
   ( module API
+  , module API.Sessions
+  , module API.Topics
   ) where
 
-import Data.Aeson
 import Data.UUID
 import Servant
 
-
-data SessionResponse = SessionResponse
-  { sessionResponseUser :: UUID
-  , sessionResponseSession :: UUID
-  , sessionResponseTopics :: [UUID]
-  } deriving (Eq, Show)
-
-
-instance ToJSON SessionResponse where
-  toJSON (SessionResponse user session topics) =
-    object ["user" .= user, "session" .= session, "topics" .= topics]
-
-
-instance FromJSON SessionResponse where
-  parseJSON = withObject "SessionResponse" $ \o ->
-    SessionResponse <$> o .: "user" <*> o .: "session" <*> o .: "topics"
-
-
-newtype SessionsResponse
-  = SessionsResponse { unSessionsResponseSessions :: [UUID] }
-  deriving (Eq, Show)
-
-
-instance ToJSON SessionsResponse where
-  toJSON (SessionsResponse sessions) = object ["sessions" .= sessions]
-
-
-instance FromJSON SessionsResponse where
-  parseJSON = withObject "SessionsResponse" $ \o -> do
-    sessions <- o .: "sessions"
-    return $ SessionsResponse sessions
+import API.Sessions
+import API.Topics
 
 
 type API = AuthProtect "signature-auth" :>
@@ -49,8 +20,14 @@ type API = AuthProtect "signature-auth" :>
   )
 
 
-type TopicsAPI = Capture "topic" UUID :>
-  ( "broadcast" :> PostNoContent
+type TopicsAPI
+  = ( Get '[JSON] TopicsResponse
+  :<|> Capture "topic" UUID :> TopicAPI
+    )
+
+
+type TopicAPI
+  = ( "broadcast" :> PostNoContent
   :<|> "send-receive" :> PostNoContent
   :<|> "log-events" :> ( PostNoContent :<|> DeleteNoContent )
-  )
+    )
