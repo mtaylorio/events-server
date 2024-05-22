@@ -45,30 +45,34 @@ topicsHandler state (Authenticated{}) = do
       liftIO $ putStrLn $ "Error querying topics: " ++ show err
       throwError err500
     Right topics' -> do
-      return $ TopicsResponse $ map topicInfo topics'
+      return $ TopicsResponse $ map topicResponse topics'
   where
   db = unStateDatabase state
-  topicInfo (DBTopic topic broadcast logEvents created) =
-    TopicInfo topic broadcast logEvents created
+  topicResponse (DBTopic topic broadcast logEvents created) =
+    TopicResponse topic broadcast logEvents created
 topicsHandler _ _ = throwError err401
 
 
-createTopicInfoHandler :: State -> Auth -> TopicInfo -> Handler NoContent
-createTopicInfoHandler state (Authenticated{}) topicInfo = do
-  result <- liftIO $ runUpdate db $ upsertTopic dbTopic
+createTopicInfoHandler :: State -> Auth -> CreateTopic -> Handler TopicResponse
+createTopicInfoHandler state (Authenticated{}) createTopic = do
+  now <- liftIO getCurrentTime
+  result <- liftIO $ runUpdate db $ upsertTopic $ dbTopic now
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting topic: " ++ show err
       throwError err500
     Right _ -> do
-      return NoContent
+      return $ TopicResponse
+        (createTopicId createTopic)
+        (createTopicBroadcast createTopic)
+        (createTopicLogEvents createTopic)
+        now
   where
   db = unStateDatabase state
   dbTopic = DBTopic
-    (topicInfoId topicInfo)
-    (topicInfoBroadcast topicInfo)
-    (topicInfoLogEvents topicInfo)
-    (topicInfoCreatedAt topicInfo)
+    (createTopicId createTopic)
+    (createTopicBroadcast createTopic)
+    (createTopicLogEvents createTopic)
 createTopicInfoHandler _ _ _ = throwError err401
 
 

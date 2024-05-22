@@ -8,16 +8,38 @@ import Data.UUID
 import Data.Time.Clock
 
 
-data TopicInfo = TopicInfo
-  { topicInfoId :: UUID
-  , topicInfoBroadcast :: Bool
-  , topicInfoLogEvents :: Bool
-  , topicInfoCreatedAt :: UTCTime
+data CreateTopic = CreateTopic
+  { createTopicId :: UUID
+  , createTopicBroadcast :: Bool
+  , createTopicLogEvents :: Bool
   } deriving (Eq, Show)
 
 
-instance ToJSON TopicInfo where
-  toJSON (TopicInfo id' broadcast logEvents createdAt) = object
+instance ToJSON CreateTopic where
+  toJSON (CreateTopic id' broadcast logEvents) = object
+    ["id" .= id'
+    , "broadcast" .= broadcast
+    , "logEvents" .= logEvents
+    ]
+
+
+instance FromJSON CreateTopic where
+  parseJSON = withObject "CreateTopic" $ \o -> CreateTopic
+    <$> o .: "id"
+    <*> o .: "broadcast"
+    <*> o .: "logEvents"
+
+
+data TopicResponse = TopicResponse
+  { topicResponseId :: UUID
+  , topicResponseBroadcast :: Bool
+  , topicResponseLogEvents :: Bool
+  , topicResponseCreatedAt :: UTCTime
+  } deriving (Eq, Show)
+
+
+instance ToJSON TopicResponse where
+  toJSON (TopicResponse id' broadcast logEvents createdAt) = object
     ["id" .= id'
     , "broadcast" .= broadcast
     , "logEvents" .= logEvents
@@ -25,8 +47,8 @@ instance ToJSON TopicInfo where
     ]
 
 
-instance FromJSON TopicInfo where
-  parseJSON = withObject "TopicInfo" $ \o -> TopicInfo
+instance FromJSON TopicResponse where
+  parseJSON = withObject "TopicResponse" $ \o -> TopicResponse
     <$> o .: "id"
     <*> o .: "broadcast"
     <*> o .: "logEvents"
@@ -34,7 +56,7 @@ instance FromJSON TopicInfo where
 
 
 newtype TopicsResponse
-  = TopicsResponse { unTopicsResponseTopics :: [TopicInfo] }
+  = TopicsResponse { unTopicsResponseTopics :: [TopicResponse] }
   deriving (Eq, Show)
 
 

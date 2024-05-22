@@ -22,7 +22,7 @@ type API = AuthProtect "signature-auth" :>
 
 type TopicsAPI
   = ( Get '[JSON] TopicsResponse
-  :<|> ReqBody '[JSON] TopicInfo :> PostNoContent
+  :<|> ReqBody '[JSON] CreateTopic :> Post '[JSON] TopicResponse
   :<|> Capture "topic" UUID :> TopicAPI
     )
 
