@@ -66,7 +66,9 @@ upsertTopicBroadcast topic = statement topic insertOnConflictUpdateTopicBroadcas
 
 
 deleteTopic :: UUID -> Transaction ()
-deleteTopic topicId = statement topicId deleteTopic'
+deleteTopic topicId = do
+  statement topicId deleteTopicEvents
+  statement topicId deleteTopic'
 
 
 runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
@@ -159,6 +161,14 @@ insertOnConflictUpdateEvent = Statement sql encoder decoder True
           \  VALUES ($1, $2, $3, $4) \
           \  ON CONFLICT (uuid) DO NOTHING"
     encoder = eventDataEncoder
+    decoder = D.noResult
+
+
+deleteTopicEvents :: Statement UUID ()
+deleteTopicEvents = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM events WHERE topic_uuid = $1"
+    encoder = E.param (E.nonNullable E.uuid)
     decoder = D.noResult
 
 
