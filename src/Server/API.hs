@@ -13,9 +13,14 @@ import State
 
 server :: State -> Server API
 server state auth
+  = sessionsServer state auth
+  :<|> topicsServer state auth
+
+
+sessionsServer :: State -> Auth -> Server SessionsAPI
+sessionsServer state auth
   = sessionsHandler state auth
   :<|> sessionHandler state auth
-  :<|> topicsServer state auth
 
 
 topicsServer :: State -> Auth -> Server TopicsAPI

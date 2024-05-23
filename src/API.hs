@@ -13,11 +13,17 @@ import API.Sessions
 import API.Topics
 
 
-type API = AuthProtect "signature-auth" :>
-  ( "sessions" :> Get '[JSON] SessionsResponse
-  :<|> "session" :> Capture "session" UUID :> Get '[JSON] SessionResponse
+type API
+  = AuthProtect "signature-auth" :>
+    ( "sessions" :> SessionsAPI
   :<|> "topics" :> TopicsAPI
-  )
+    )
+
+
+type SessionsAPI
+  = ( Get '[JSON] SessionsResponse
+  :<|> Capture "session" UUID :> Get '[JSON] SessionResponse
+    )
 
 
 type TopicsAPI
