@@ -9,9 +9,9 @@ import Data.Time.Clock
 
 
 data CreateTopic = CreateTopic
-  { createTopicId :: UUID
-  , createTopicBroadcast :: Bool
-  , createTopicLogEvents :: Bool
+  { createTopicId :: !UUID
+  , createTopicBroadcast :: !Bool
+  , createTopicLogEvents :: !Bool
   } deriving (Eq, Show)
 
 
@@ -30,11 +30,30 @@ instance FromJSON CreateTopic where
     <*> o .: "logEvents"
 
 
+data UpdateTopic = UpdateTopic
+  { updateTopicBroadcast :: !Bool
+  , updateTopicLogEvents :: !Bool
+  } deriving (Eq, Show)
+
+
+instance ToJSON UpdateTopic where
+  toJSON (UpdateTopic broadcast logEvents) = object
+    ["broadcast" .= broadcast
+    , "logEvents" .= logEvents
+    ]
+
+
+instance FromJSON UpdateTopic where
+  parseJSON = withObject "UpdateTopic" $ \o -> UpdateTopic
+    <$> o .: "broadcast"
+    <*> o .: "logEvents"
+
+
 data TopicResponse = TopicResponse
-  { topicResponseId :: UUID
-  , topicResponseBroadcast :: Bool
-  , topicResponseLogEvents :: Bool
-  , topicResponseCreatedAt :: UTCTime
+  { topicResponseId :: !UUID
+  , topicResponseBroadcast :: !Bool
+  , topicResponseLogEvents :: !Bool
+  , topicResponseCreatedAt :: !UTCTime
   } deriving (Eq, Show)
 
 

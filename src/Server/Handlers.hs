@@ -15,7 +15,6 @@ import Client
 import DB
 import Server.Auth
 import State
-import Topic
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse
@@ -68,8 +67,8 @@ topicHandler state (Authenticated{}) topicId = do
 topicHandler _ _ _ = throwError err401
 
 
-createTopicInfoHandler :: State -> Auth -> CreateTopic -> Handler TopicResponse
-createTopicInfoHandler state (Authenticated{}) createTopic = do
+createTopicHandler :: State -> Auth -> CreateTopic -> Handler TopicResponse
+createTopicHandler state (Authenticated{}) createTopic = do
   now <- liftIO getCurrentTime
   result <- liftIO $ runUpdate db $ upsertTopic $ dbTopic now
   case result of
@@ -88,35 +87,7 @@ createTopicInfoHandler state (Authenticated{}) createTopic = do
     (createTopicId createTopic)
     (createTopicBroadcast createTopic)
     (createTopicLogEvents createTopic)
-createTopicInfoHandler _ _ _ = throwError err401
-
-
-createBroadcastTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createBroadcastTopicHandler state (Authenticated{}) = createTopicHandler state True
-createBroadcastTopicHandler _ _ = \_ -> throwError err401
-
-
-createSendReceiveTopicHandler :: State -> Auth -> UUID -> Handler NoContent
-createSendReceiveTopicHandler state (Authenticated{}) = createTopicHandler state False
-createSendReceiveTopicHandler _ _ = \_ -> throwError err401
-
-
-createTopicHandler :: State -> Bool -> UUID -> Handler NoContent
-createTopicHandler state broadcast topic = do
-  now <- liftIO getCurrentTime
-  let dbTopic = DBTopic topic broadcast False now
-  result <- liftIO $ runUpdate db $ upsertTopicBroadcast dbTopic
-  case result of
-    Left err -> do
-      liftIO $ putStrLn $ "Error upserting topic: " ++ show err
-      throwError err500
-    Right _ -> do
-      if broadcast
-        then liftIO $ atomically $ createBroadcastTopic (unStateTopics state) topic
-        else liftIO $ atomically $ createSendReceiveTopic (unStateTopics state) topic
-      return NoContent
-  where
-  db = unStateDatabase state
+createTopicHandler _ _ _ = throwError err401
 
 
 deleteTopicHandler :: State -> Auth -> UUID -> Handler NoContent
@@ -134,24 +105,22 @@ deleteTopicHandler state (Authenticated{}) topic = do
 deleteTopicHandler _ _ _ = throwError err401
 
 
-logEventsHandler :: State -> Auth -> UUID -> Handler NoContent
-logEventsHandler state (Authenticated{}) = setLogEventsHandler state True
-logEventsHandler _ _ = \_ -> throwError err401
-
-
-deleteLogEventsHandler :: State -> Auth -> UUID -> Handler NoContent
-deleteLogEventsHandler state (Authenticated{}) = setLogEventsHandler state False
-deleteLogEventsHandler _ _ = \_ -> throwError err401
-
-
-setLogEventsHandler :: State -> Bool -> UUID -> Handler NoContent
-setLogEventsHandler state logEvents topic = do
-  result <- liftIO $ runUpdate db $ updateTopicLogEvents topic logEvents
+updateTopicHandler :: State -> Auth -> UUID -> UpdateTopic -> Handler TopicResponse
+updateTopicHandler state (Authenticated{}) topic updateTopic = do
+  now <- liftIO getCurrentTime
+  result <- liftIO $ runUpdate db $ upsertTopic $ dbTopic now
   case result of
     Left err -> do
-      liftIO $ putStrLn $ "Error upserting event: " ++ show err
+      liftIO $ putStrLn $ "Error upserting topic: " ++ show err
       throwError err500
-    Right _ ->
-      return NoContent
+    Right _ -> do
+      return $ TopicResponse
+        topic
+        (updateTopicBroadcast updateTopic)
+        (updateTopicLogEvents updateTopic)
+        now
   where
   db = unStateDatabase state
+  dbTopic =
+    DBTopic topic (updateTopicBroadcast updateTopic) (updateTopicLogEvents updateTopic)
+updateTopicHandler _ _ _ _ = throwError err401

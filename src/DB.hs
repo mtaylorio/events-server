@@ -48,21 +48,12 @@ queryTopicLogEvents :: UUID -> Transaction (Maybe Bool)
 queryTopicLogEvents topicId = statement topicId selectTopicLogEvents
 
 
-updateTopicLogEvents :: UUID -> Bool -> Transaction ()
-updateTopicLogEvents topicId logEvents =
-  statement (topicId, logEvents) updateTopicLogEvents'
-
-
 upsertEvent :: EventData -> Transaction ()
 upsertEvent evt = statement evt insertOnConflictUpdateEvent
 
 
 upsertTopic :: DBTopic -> Transaction ()
 upsertTopic topic = statement topic insertOnConflictUpdateTopic
-
-
-upsertTopicBroadcast :: DBTopic -> Transaction ()
-upsertTopicBroadcast topic = statement topic insertOnConflictUpdateTopicBroadcast
 
 
 deleteTopic :: UUID -> Transaction ()
@@ -80,10 +71,10 @@ runUpdate pool tx = Pool.use pool $ transaction Serializable Write tx
 
 
 data DBTopic = DBTopic
-  { dbTopicId :: UUID
-  , dbTopicBroadcast :: Bool
-  , dbTopicLogEvents :: Bool
-  , dbTopicCreated :: UTCTime
+  { dbTopicId :: !UUID
+  , dbTopicBroadcast :: !Bool
+  , dbTopicLogEvents :: !Bool
+  , dbTopicCreated :: !UTCTime
   } deriving (Show)
 
 
@@ -137,18 +128,6 @@ insertOnConflictUpdateTopic = Statement sql encoder decoder True
           \  ON CONFLICT (uuid) DO UPDATE SET \
           \  broadcast = EXCLUDED.broadcast, \
           \  log_events = EXCLUDED.log_events"
-    encoder = topicEncoder
-    decoder = D.noResult
-
-
-insertOnConflictUpdateTopicBroadcast :: Statement DBTopic ()
-insertOnConflictUpdateTopicBroadcast = Statement sql encoder decoder True
-  where
-    sql = "INSERT INTO topics \
-          \  (uuid, broadcast, log_events, created_at) \
-          \  VALUES ($1, $2, $3, $4) \
-          \  ON CONFLICT (uuid) DO UPDATE SET \
-          \  broadcast = EXCLUDED.broadcast"
     encoder = topicEncoder
     decoder = D.noResult
 

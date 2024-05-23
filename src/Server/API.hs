@@ -26,7 +26,7 @@ sessionsServer state auth
 topicsServer :: State -> Auth -> Server TopicsAPI
 topicsServer state auth
   = topicsHandler state auth
-  :<|> createTopicInfoHandler state auth
+  :<|> createTopicHandler state auth
   :<|> topicServer state auth
 
 
@@ -34,10 +34,4 @@ topicServer :: State -> Auth -> UUID -> Server TopicAPI
 topicServer state auth topic
   = topicHandler state auth topic
   :<|> deleteTopicHandler state auth topic
-  :<|> createBroadcastTopicHandler state auth topic
-  :<|> createSendReceiveTopicHandler state auth topic
-  :<|> eventsHandlers
-  where
-  eventsHandlers
-    = logEventsHandler state auth topic
-    :<|> deleteLogEventsHandler state auth topic
+  :<|> updateTopicHandler state auth topic

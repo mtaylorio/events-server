@@ -22,8 +22,12 @@ type API
 
 type SessionsAPI
   = ( Get '[JSON] SessionsResponse
-  :<|> Capture "session" UUID :> Get '[JSON] SessionResponse
+  :<|> Capture "session" UUID :> SessionAPI
     )
+
+
+type SessionAPI
+  = Get '[JSON] SessionResponse
 
 
 type TopicsAPI
@@ -36,7 +40,5 @@ type TopicsAPI
 type TopicAPI
   = ( Get '[JSON] TopicResponse
   :<|> DeleteNoContent
-  :<|> "broadcast" :> PostNoContent
-  :<|> "send-receive" :> PostNoContent
-  :<|> "log-events" :> ( PostNoContent :<|> DeleteNoContent )
+  :<|> ReqBody '[JSON] UpdateTopic :> Put '[JSON] TopicResponse
     )
