@@ -36,6 +36,10 @@ queryTopics :: Transaction [DBTopic]
 queryTopics = statement () selectTopics
 
 
+queryTopic :: UUID -> Transaction (Maybe DBTopic)
+queryTopic topicId = statement topicId selectTopic
+
+
 queryEvents :: UUID -> Transaction [EventData]
 queryEvents topicId = statement topicId selectEvents
 
@@ -61,6 +65,10 @@ upsertTopicBroadcast :: DBTopic -> Transaction ()
 upsertTopicBroadcast topic = statement topic insertOnConflictUpdateTopicBroadcast
 
 
+deleteTopic :: UUID -> Transaction ()
+deleteTopic topicId = statement topicId deleteTopic'
+
+
 runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
 runQuery pool tx = Pool.use pool $ transaction Serializable Read tx
 
@@ -83,6 +91,14 @@ selectTopics = Statement sql encoder decoder True
     sql = "SELECT uuid, broadcast, log_events, created_at FROM topics"
     encoder = E.noParams
     decoder = D.rowList topicDecoder
+
+
+selectTopic :: Statement UUID (Maybe DBTopic)
+selectTopic = Statement sql encoder decoder True
+  where
+    sql = "SELECT uuid, broadcast, log_events, created_at FROM topics WHERE uuid = $1"
+    encoder = E.param (E.nonNullable E.uuid)
+    decoder = D.rowMaybe topicDecoder
 
 
 selectEvents :: Statement UUID [EventData]
@@ -143,6 +159,14 @@ insertOnConflictUpdateEvent = Statement sql encoder decoder True
           \  VALUES ($1, $2, $3, $4) \
           \  ON CONFLICT (uuid) DO NOTHING"
     encoder = eventDataEncoder
+    decoder = D.noResult
+
+
+deleteTopic' :: Statement UUID ()
+deleteTopic' = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM topics WHERE uuid = $1"
+    encoder = E.param (E.nonNullable E.uuid)
     decoder = D.noResult
 
 

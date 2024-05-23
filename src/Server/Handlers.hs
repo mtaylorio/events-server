@@ -53,6 +53,21 @@ topicsHandler state (Authenticated{}) = do
 topicsHandler _ _ = throwError err401
 
 
+topicHandler :: State -> Auth -> UUID -> Handler TopicResponse
+topicHandler state (Authenticated{}) topicId = do
+  topic' <- liftIO $ runQuery db $ queryTopic topicId
+  case topic' of
+    Left err -> do
+      liftIO $ putStrLn $ "Error querying topic: " ++ show err
+      throwError err500
+    Right Nothing -> throwError err404
+    Right (Just (DBTopic topicId' broadcast logEvents created)) ->
+      return $ TopicResponse topicId' broadcast logEvents created
+  where
+  db = unStateDatabase state
+topicHandler _ _ _ = throwError err401
+
+
 createTopicInfoHandler :: State -> Auth -> CreateTopic -> Handler TopicResponse
 createTopicInfoHandler state (Authenticated{}) createTopic = do
   now <- liftIO getCurrentTime
@@ -102,6 +117,21 @@ createTopicHandler state broadcast topic = do
       return NoContent
   where
   db = unStateDatabase state
+
+
+deleteTopicHandler :: State -> Auth -> UUID -> Handler NoContent
+deleteTopicHandler state (Authenticated{}) topic = do
+  result <- liftIO $ runUpdate db $ deleteTopic topic
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error deleting topic: " ++ show err
+      throwError err500
+    Right _ -> do
+      liftIO $ atomically $ deleteTopicFromState state topic
+      return NoContent
+  where
+  db = unStateDatabase state
+deleteTopicHandler _ _ _ = throwError err401
 
 
 logEventsHandler :: State -> Auth -> UUID -> Handler NoContent

@@ -28,7 +28,9 @@ type TopicsAPI
 
 
 type TopicAPI
-  = ( "broadcast" :> PostNoContent
+  = ( Get '[JSON] TopicResponse
+  :<|> DeleteNoContent
+  :<|> "broadcast" :> PostNoContent
   :<|> "send-receive" :> PostNoContent
   :<|> "log-events" :> ( PostNoContent :<|> DeleteNoContent )
     )

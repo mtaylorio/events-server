@@ -5,6 +5,7 @@ module Topic
   ( createBroadcastTopic
   , createSendReceiveTopic
   , createTopicManager
+  , removeTopic
   , publish
   , subscribe
   , EventHandler
@@ -60,6 +61,11 @@ createSendReceiveTopic tm k = do
 insertTopic :: (Ord k, Topic' t e) => TopicManager k e -> k -> t -> STM ()
 insertTopic (TopicManager topics) k t = do
   modifyTVar' topics $ insert k (Topic t)
+
+
+removeTopic :: Ord k => TopicManager k e -> k -> STM ()
+removeTopic (TopicManager topics) k = do
+  modifyTVar' topics $ delete k
 
 
 lookupTopic :: Ord k => TopicManager k e -> k -> STM (Maybe (Topic e))

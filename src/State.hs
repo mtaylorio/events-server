@@ -3,6 +3,7 @@ module State
   , initState
   , insertClient
   , removeClient
+  , deleteTopicFromState
   ) where
 
 import Control.Concurrent.STM
@@ -42,3 +43,9 @@ removeClient :: State -> TVar Client -> STM ()
 removeClient state client = do
   client' <- readTVar client
   modifyTVar' (unStateClients state) $ delete (unClientSession client')
+
+
+deleteTopicFromState :: State -> UUID -> STM ()
+deleteTopicFromState state topicId = do
+  removeTopic (unStateTopics state) topicId
+  return ()
