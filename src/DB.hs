@@ -44,6 +44,10 @@ queryEvents :: UUID -> Transaction [EventData]
 queryEvents topicId = statement topicId selectEvents
 
 
+queryEvent :: UUID -> UUID -> Transaction (Maybe EventData)
+queryEvent topicId eventId = statement (topicId, eventId) selectEvent
+
+
 queryTopicLogEvents :: UUID -> Transaction (Maybe Bool)
 queryTopicLogEvents topicId = statement topicId selectTopicLogEvents
 
@@ -60,6 +64,10 @@ deleteTopic :: UUID -> Transaction ()
 deleteTopic topicId = do
   statement topicId deleteTopicEvents
   statement topicId deleteTopic'
+
+
+deleteEvent :: UUID -> UUID -> Transaction ()
+deleteEvent topicId eventId = statement (topicId, eventId) deleteEvent'
 
 
 runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
@@ -103,6 +111,16 @@ selectEvents = Statement sql encoder decoder True
     decoder = D.rowList eventDataDecoder
 
 
+selectEvent :: Statement (UUID, UUID) (Maybe EventData)
+selectEvent = Statement sql encoder decoder True
+  where
+    sql = "SELECT uuid, topic_uuid, created_at, payload \
+          \  FROM events WHERE topic_uuid = $1 AND uuid = $2"
+    encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
+              (snd >$< E.param (E.nonNullable E.uuid))
+    decoder = D.rowMaybe eventDataDecoder
+
+
 selectTopicLogEvents :: Statement UUID (Maybe Bool)
 selectTopicLogEvents = Statement sql encoder decoder True
   where
@@ -138,7 +156,8 @@ insertOnConflictUpdateEvent = Statement sql encoder decoder True
     sql = "INSERT INTO events \
           \  (uuid, topic_uuid, created_at, payload) \
           \  VALUES ($1, $2, $3, $4) \
-          \  ON CONFLICT (uuid) DO NOTHING"
+          \  ON CONFLICT (uuid) DO UPDATE SET \
+          \  payload = EXCLUDED.payload"
     encoder = eventDataEncoder
     decoder = D.noResult
 
@@ -148,6 +167,15 @@ deleteTopicEvents = Statement sql encoder decoder True
   where
     sql = "DELETE FROM events WHERE topic_uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
+    decoder = D.noResult
+
+
+deleteEvent' :: Statement (UUID, UUID) ()
+deleteEvent' = Statement sql encoder decoder True
+  where
+    sql = "DELETE FROM events WHERE topic_uuid = $1 AND uuid = $2"
+    encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
+              (snd >$< E.param (E.nonNullable E.uuid))
     decoder = D.noResult
 
 

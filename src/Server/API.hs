@@ -35,3 +35,11 @@ topicServer state auth topic
   = topicHandler state auth topic
   :<|> deleteTopicHandler state auth topic
   :<|> updateTopicHandler state auth topic
+  :<|> eventsServer state auth topic
+
+
+eventsServer :: State -> Auth -> UUID -> Server EventsAPI
+eventsServer state auth topic event
+  = getEventHandler state auth topic event
+  :<|> deleteEventHandler state auth topic event
+  :<|> upsertEventHandler state auth topic event

@@ -6,11 +6,14 @@ module API
   , module API.Topics
   ) where
 
+import Data.Aeson
 import Data.UUID
 import Servant
+import qualified Data.Aeson.KeyMap as KM
 
 import API.Sessions
 import API.Topics
+import Event
 
 
 type API
@@ -41,4 +44,15 @@ type TopicAPI
   = ( Get '[JSON] TopicResponse
   :<|> DeleteNoContent
   :<|> ReqBody '[JSON] UpdateTopic :> Put '[JSON] TopicResponse
+  :<|> "events" :> EventsAPI
     )
+
+
+type EventsAPI
+  = Capture "event" UUID :> EventAPI
+
+
+type EventAPI
+  = Get '[JSON] EventData
+  :<|> DeleteNoContent
+  :<|> ReqBody '[JSON] (KM.KeyMap Value) :> Post '[JSON] EventData

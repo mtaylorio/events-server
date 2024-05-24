@@ -5,14 +5,17 @@ module Server.Handlers
 
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
 import Data.Time.Clock
 import Data.UUID
 import Servant
+import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Map as Map
 
 import API
 import Client
 import DB
+import Event
 import Server.Auth
 import State
 
@@ -124,3 +127,49 @@ updateTopicHandler state (Authenticated{}) topic updateTopic = do
   dbTopic =
     DBTopic topic (updateTopicBroadcast updateTopic) (updateTopicLogEvents updateTopic)
 updateTopicHandler _ _ _ _ = throwError err401
+
+
+getEventHandler :: State -> Auth -> UUID -> UUID -> Handler EventData
+getEventHandler state (Authenticated{}) topic event = do
+  maybeEvent <- liftIO $ runQuery db $ queryEvent topic event
+  case maybeEvent of
+    Left err -> do
+      liftIO $ putStrLn $ "Error querying event: " ++ show err
+      throwError err500
+    Right Nothing -> throwError err404
+    Right (Just event') -> do
+      return event'
+  where
+  db = unStateDatabase state
+getEventHandler _ _ _ _ = throwError err401
+
+
+deleteEventHandler :: State -> Auth -> UUID -> UUID -> Handler NoContent
+deleteEventHandler state (Authenticated{}) topic event = do
+  result <- liftIO $ runUpdate db $ deleteEvent topic event
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error deleting event: " ++ show err
+      throwError err500
+    Right _ -> do
+      return NoContent
+  where
+  db = unStateDatabase state
+deleteEventHandler _ _ _ _ = throwError err401
+
+
+upsertEventHandler ::
+  State -> Auth -> UUID -> UUID -> KM.KeyMap Value -> Handler EventData
+upsertEventHandler state (Authenticated{}) topic event data' = do
+  now <- liftIO getCurrentTime
+  let eventData = EventData event topic now data'
+  result <- liftIO $ runUpdate db $ upsertEvent eventData
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error upserting event: " ++ show err
+      throwError err500
+    Right _ -> do
+      return eventData
+  where
+  db = unStateDatabase state
+upsertEventHandler _ _ _ _ _ = throwError err401
