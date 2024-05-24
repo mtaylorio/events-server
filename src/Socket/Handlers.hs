@@ -28,7 +28,7 @@ authFailedMsg action client topic
 handlePublish :: State -> TVar Client -> EventWrapper -> IO ()
 handlePublish state client' evt = do
   client <- readTVarIO client'
-  authorized <- authorizeTopic state client Write topic
+  authorized <- authorizeTopicEvent state client Write topic (unEventId $ unEvent evt)
   if not authorized
     then do
       hPutStrLn stderr $ authFailedMsg "publish" client topic
