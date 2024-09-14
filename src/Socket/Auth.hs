@@ -22,13 +22,13 @@ import State
 authorizeTopic :: State -> Client -> Action -> UUID -> IO Bool
 authorizeTopic state client action topicId =
   authorizeTopicResource state client action $
-    "/topics" <> toText topicId
+    "/topics/" <> toText topicId
 
 
 authorizeTopicEvent :: State -> Client -> Action -> UUID -> UUID -> IO Bool
 authorizeTopicEvent state client action topicId eventId =
   authorizeTopicResource state client action $
-    "/topics" <> toText topicId <> "/events/" <> toText eventId
+    "/topics/" <> toText topicId <> "/events/" <> toText eventId
 
 
 authorizeTopicResource :: State -> Client -> Action -> Text -> IO Bool
