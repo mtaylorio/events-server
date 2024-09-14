@@ -1,0 +1,46 @@
+name: Build Development Trunk
+on:
+  push:
+    branches:
+    - main
+jobs:
+  version:
+    name: Assign Version
+    runs-on: events-mtaylor-io-runner-k8s
+    container:
+      image: images.home.mtaylor.io/deployer:0.0.7
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - id: version
+      name: Generate Version Tag
+      run: |
+        set -eux
+        git config --global --add safe.directory $GITHUB_WORKSPACE
+        git fetch origin 'refs/tags/*:refs/tags/*'
+        export tag=$(get-release-tag)
+        echo "tag=$tag" >> $GITHUB_OUTPUT
+  stack-build:
+    name: Stack Build
+    needs: version
+    runs-on: events-mtaylor-io-runner-k8s
+    container:
+      image: "images.home.mtaylor.io/events-mtaylor-io:build"
+    outputs:
+      tag: ${{ needs.version.outputs.tag }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: |
+        set -eux
+        ./bin/version.sh ${{ needs.version.outputs.tag }}
+        stack build --allow-different-user --copy-bins --local-bin-path .
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: events-mtaylor-io
+        path: events-mtaylor-io
+
