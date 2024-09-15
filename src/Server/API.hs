@@ -39,7 +39,13 @@ topicServer state auth topic
 
 
 eventsServer :: State -> Auth -> UUID -> Server EventsAPI
-eventsServer state auth topic event
+eventsServer state auth topic
+  = listEventsHandler state auth topic
+  :<|> eventServer state auth topic
+
+
+eventServer :: State -> Auth -> UUID -> UUID -> Server EventAPI
+eventServer state auth topic event
   = getEventHandler state auth topic event
   :<|> deleteEventHandler state auth topic event
   :<|> upsertEventHandler state auth topic event

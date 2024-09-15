@@ -11,6 +11,7 @@ import Data.UUID
 import Servant
 import qualified Data.Aeson.KeyMap as KM
 
+import API.Helpers
 import API.Sessions
 import API.Topics
 import Event
@@ -49,7 +50,9 @@ type TopicAPI
 
 
 type EventsAPI
-  = Capture "event" UUID :> EventAPI
+  = ( ListAPI EventData
+  :<|> Capture "event" UUID :> EventAPI
+    )
 
 
 type EventAPI

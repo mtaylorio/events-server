@@ -6,6 +6,7 @@ module Server.Handlers
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
+import Data.Maybe
 import Data.Time.Clock
 import Data.UUID
 import Servant
@@ -13,6 +14,7 @@ import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Map as Map
 
 import API
+import API.Helpers
 import Client
 import DB
 import Event
@@ -127,6 +129,27 @@ updateTopicHandler state (Authenticated{}) topic updateTopic = do
   dbTopic =
     DBTopic topic (updateTopicBroadcast updateTopic) (updateTopicLogEvents updateTopic)
 updateTopicHandler _ _ _ _ = throwError err401
+
+
+listEventsHandler ::
+  State -> Auth -> UUID -> Maybe Int -> Maybe Int -> Handler (ListResponse EventData)
+listEventsHandler state (Authenticated{}) topic maybeLimit maybeOffset = do
+  let limit = fromMaybe 10 maybeLimit
+  let offset = fromMaybe 0 maybeOffset
+  events <- liftIO $ runQuery db $ queryEventsLimitOffset topic limit offset
+  total <- liftIO $ runQuery db $ queryEventsCount topic
+  case (events, total) of
+    (Left err, _) -> do
+      liftIO $ putStrLn $ "Error querying events: " ++ show err
+      throwError err500
+    (_, Left err) -> do
+      liftIO $ putStrLn $ "Error querying events count: " ++ show err
+      throwError err500
+    (Right events', Right total') -> do
+      return $ ListResponse events' total'
+  where
+  db = unStateDatabase state
+listEventsHandler _ _ _ _ _ = throwError err401
 
 
 getEventHandler :: State -> Auth -> UUID -> UUID -> Handler EventData

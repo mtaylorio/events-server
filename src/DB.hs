@@ -8,6 +8,7 @@ import Data.Functor.Contravariant ((>$<))
 import Data.Text.Encoding (encodeUtf8)
 import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
+import GHC.Int (Int32)
 import Hasql.Statement (Statement(..))
 import Hasql.Transaction (Transaction, statement)
 import Hasql.Transaction.Sessions
@@ -40,8 +41,18 @@ queryTopic :: UUID -> Transaction (Maybe DBTopic)
 queryTopic topicId = statement topicId selectTopic
 
 
+queryEventsCount :: UUID -> Transaction Int
+queryEventsCount topicId = do
+  fromIntegral <$> statement topicId selectEventsCount
+
+
 queryEvents :: UUID -> Transaction [EventData]
 queryEvents topicId = statement topicId selectEvents
+
+
+queryEventsLimitOffset :: UUID -> Int -> Int -> Transaction [EventData]
+queryEventsLimitOffset topicId limit offset = do
+  statement (topicId, (fromIntegral limit, fromIntegral offset)) selectEventsLimitOffset
 
 
 queryEvent :: UUID -> UUID -> Transaction (Maybe EventData)
@@ -102,12 +113,32 @@ selectTopic = Statement sql encoder decoder True
     decoder = D.rowMaybe topicDecoder
 
 
+selectEventsCount :: Statement UUID Int32
+selectEventsCount = Statement sql encoder decoder True
+  where
+    sql = "SELECT COUNT(*) FROM events WHERE topic_uuid = $1"
+    encoder = E.param (E.nonNullable E.uuid)
+    decoder = D.singleRow (D.column (D.nonNullable D.int4))
+
+
 selectEvents :: Statement UUID [EventData]
 selectEvents = Statement sql encoder decoder True
   where
     sql = "SELECT uuid, topic_uuid, created_at, payload \
           \  FROM events WHERE topic_uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
+    decoder = D.rowList eventDataDecoder
+
+
+selectEventsLimitOffset :: Statement (UUID, (Int32, Int32)) [EventData]
+selectEventsLimitOffset = Statement sql encoder decoder True
+  where
+    sql = "SELECT uuid, topic_uuid, created_at, payload \
+          \  FROM events WHERE topic_uuid = $1 \
+          \  ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+    encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
+              ((fst . snd) >$< E.param (E.nonNullable E.int4)) <>
+              ((snd . snd) >$< E.param (E.nonNullable E.int4))
     decoder = D.rowList eventDataDecoder
 
 
