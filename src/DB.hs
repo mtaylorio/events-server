@@ -1,8 +1,10 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module DB
   ( module DB
   ) where
 
+import Control.Monad (when)
 import Data.Aeson (Value(..))
 import Data.Functor.Contravariant ((>$<))
 import Data.Text.Encoding (encodeUtf8)
@@ -63,12 +65,38 @@ queryTopicLogEvents :: UUID -> Transaction (Maybe Bool)
 queryTopicLogEvents topicId = statement topicId selectTopicLogEvents
 
 
+addEvent :: UUID -> UUID -> KM.KeyMap Value -> UTCTime -> Transaction (Maybe EventData)
+addEvent topicId eventId eventProps eventTime = do
+  maybeTopic <- statement topicId selectTopic
+  case maybeTopic of
+    Nothing -> return Nothing
+    Just topic -> do
+      let eventData = EventData eventId prevId topicId eventTime eventProps
+          prevId = dbTopicLastEventId topic
+      statement eventData insertOnConflictUpdateEvent
+      statement (topicId, Just eventId) updateTopicLastEventId
+      return $ Just eventData
+
+
 upsertEvent :: EventData -> Transaction ()
-upsertEvent evt = statement evt insertOnConflictUpdateEvent
+upsertEvent evt = do
+  let topicId = unEventTopic evt
+  maybeTopic <- statement topicId selectTopic
+  case maybeTopic of
+    Nothing -> return ()
+    Just topic -> do
+      let prevId = dbTopicLastEventId topic
+      statement evt insertOnConflictUpdateEvent
+      when (unEventPrev evt == prevId) $
+        statement (topicId, Just $ unEventId evt) updateTopicLastEventId
 
 
-upsertTopic :: DBTopic -> Transaction ()
-upsertTopic topic = statement topic insertOnConflictUpdateTopic
+upsertTopic :: DBTopic -> Transaction DBTopic
+upsertTopic topic = do
+  statement topic insertOnConflictUpdateTopic
+  statement (dbTopicId topic) selectTopic >>= \case
+    Nothing -> error "topic not found after upsert"
+    Just topic' -> return topic'
 
 
 deleteTopic :: UUID -> Transaction ()
@@ -94,6 +122,7 @@ data DBTopic = DBTopic
   , dbTopicBroadcast :: !Bool
   , dbTopicLogEvents :: !Bool
   , dbTopicCreated :: !UTCTime
+  , dbTopicLastEventId :: !(Maybe UUID)
   } deriving (Show)
 
 
@@ -124,7 +153,7 @@ selectEventsCount = Statement sql encoder decoder True
 selectEvents :: Statement UUID [EventData]
 selectEvents = Statement sql encoder decoder True
   where
-    sql = "SELECT uuid, topic_uuid, created_at, payload \
+    sql = "SELECT uuid, prev, topic_uuid, created_at, payload \
           \  FROM events WHERE topic_uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
     decoder = D.rowList eventDataDecoder
@@ -133,7 +162,7 @@ selectEvents = Statement sql encoder decoder True
 selectEventsLimitOffset :: Statement (UUID, (Int32, Int32)) [EventData]
 selectEventsLimitOffset = Statement sql encoder decoder True
   where
-    sql = "SELECT uuid, topic_uuid, created_at, payload \
+    sql = "SELECT uuid, prev, topic_uuid, created_at, payload \
           \  FROM events WHERE topic_uuid = $1 \
           \  ORDER BY created_at DESC LIMIT $2 OFFSET $3"
     encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
@@ -145,7 +174,7 @@ selectEventsLimitOffset = Statement sql encoder decoder True
 selectEvent :: Statement (UUID, UUID) (Maybe EventData)
 selectEvent = Statement sql encoder decoder True
   where
-    sql = "SELECT uuid, topic_uuid, created_at, payload \
+    sql = "SELECT uuid, prev, topic_uuid, created_at, payload \
           \  FROM events WHERE topic_uuid = $1 AND uuid = $2"
     encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
               (snd >$< E.param (E.nonNullable E.uuid))
@@ -158,6 +187,15 @@ selectTopicLogEvents = Statement sql encoder decoder True
     sql = "SELECT log_events FROM topics WHERE uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
     decoder = D.rowMaybe (D.column (D.nonNullable D.bool))
+
+
+updateTopicLastEventId :: Statement (UUID, Maybe UUID) ()
+updateTopicLastEventId = Statement sql encoder decoder True
+  where
+    sql = "UPDATE topics SET last_event_id = $2 WHERE uuid = $1"
+    encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
+              (snd >$< E.param (E.nullable E.uuid))
+    decoder = D.noResult
 
 
 updateTopicLogEvents' :: Statement (UUID, Bool) ()
@@ -224,6 +262,7 @@ topicDecoder = DBTopic
   <*> D.column (D.nonNullable D.bool)
   <*> D.column (D.nonNullable D.bool)
   <*> D.column (D.nonNullable D.timestamptz)
+  <*> D.column (D.nullable D.uuid)
 
 
 topicEncoder :: E.Params DBTopic
@@ -243,6 +282,7 @@ uuidBoolEncoder =
 eventDataDecoder :: D.Row EventData
 eventDataDecoder = EventData
   <$> D.column (D.nonNullable D.uuid)
+  <*> D.column (D.nullable D.uuid)
   <*> D.column (D.nonNullable D.uuid)
   <*> D.column (D.nonNullable D.timestamptz)
   <*> (jsonValueToObject <$> D.column (D.nonNullable D.jsonb))

@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy as BL
 
 data EventData = EventData
   { unEventId :: !UUID
+  , unEventPrev :: !(Maybe UUID)
   , unEventTopic :: !UUID
   , unEventCreated :: !UTCTime
   , unEventData :: !(KM.KeyMap Value)
@@ -25,14 +26,21 @@ data EventData = EventData
 instance FromJSON EventData where
   parseJSON = withObject "EventData" $ \o -> do
     id' <- o .: "id"
+    prev <- o .:? "prev"
     topic <- o .: "topic"
     created <- o .: "created"
-    return $ EventData id' topic created o
+    return $ EventData id' prev topic created o
 
 
 instance ToJSON EventData where
-  toJSON (EventData id' topic created data') = Object
+  toJSON (EventData id' Nothing topic created data') = Object
     $ KM.insert "id" (toJSON id')
+    $ KM.insert "topic" (toJSON topic)
+    $ KM.insert "created" (toJSON created)
+    data'
+  toJSON (EventData id' (Just prev) topic created data') = Object
+    $ KM.insert "id" (toJSON id')
+    $ KM.insert "prev" (toJSON prev)
     $ KM.insert "topic" (toJSON topic)
     $ KM.insert "created" (toJSON created)
     data'

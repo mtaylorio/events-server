@@ -54,15 +54,17 @@ data TopicResponse = TopicResponse
   , topicResponseBroadcast :: !Bool
   , topicResponseLogEvents :: !Bool
   , topicResponseCreatedAt :: !UTCTime
+  , topicResponseLastEventId :: !(Maybe UUID)
   } deriving (Eq, Show)
 
 
 instance ToJSON TopicResponse where
-  toJSON (TopicResponse id' broadcast logEvents createdAt) = object
+  toJSON (TopicResponse id' broadcast logEvents createdAt lastEventId) = object
     ["id" .= id'
     , "broadcast" .= broadcast
     , "logEvents" .= logEvents
     , "createdAt" .= createdAt
+    , "lastEventId" .= lastEventId
     ]
 
 
@@ -72,6 +74,7 @@ instance FromJSON TopicResponse where
     <*> o .: "broadcast"
     <*> o .: "logEvents"
     <*> o .: "createdAt"
+    <*> o .: "lastEventId"
 
 
 newtype TopicsResponse

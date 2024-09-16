@@ -52,8 +52,8 @@ topicsHandler state (Authenticated{}) = do
       return $ TopicsResponse $ map topicResponse topics'
   where
   db = unStateDatabase state
-  topicResponse (DBTopic topic broadcast logEvents created) =
-    TopicResponse topic broadcast logEvents created
+  topicResponse (DBTopic topic broadcast logEvents created lastEventId) =
+    TopicResponse topic broadcast logEvents created lastEventId
 topicsHandler _ _ = throwError err401
 
 
@@ -65,8 +65,8 @@ topicHandler state (Authenticated{}) topicId = do
       liftIO $ putStrLn $ "Error querying topic: " ++ show err
       throwError err500
     Right Nothing -> throwError err404
-    Right (Just (DBTopic topicId' broadcast logEvents created)) ->
-      return $ TopicResponse topicId' broadcast logEvents created
+    Right (Just (DBTopic topicId' broadcast logEvents created lastEventId)) ->
+      return $ TopicResponse topicId' broadcast logEvents created lastEventId
   where
   db = unStateDatabase state
 topicHandler _ _ _ = throwError err401
@@ -86,12 +86,15 @@ createTopicHandler state (Authenticated{}) createTopic = do
         (createTopicBroadcast createTopic)
         (createTopicLogEvents createTopic)
         now
+        Nothing
   where
   db = unStateDatabase state
-  dbTopic = DBTopic
+  dbTopic timestamp = DBTopic
     (createTopicId createTopic)
     (createTopicBroadcast createTopic)
     (createTopicLogEvents createTopic)
+    timestamp
+    Nothing
 createTopicHandler _ _ _ = throwError err401
 
 
@@ -118,16 +121,22 @@ updateTopicHandler state (Authenticated{}) topic updateTopic = do
     Left err -> do
       liftIO $ putStrLn $ "Error upserting topic: " ++ show err
       throwError err500
-    Right _ -> do
+    Right t -> do
       return $ TopicResponse
-        topic
-        (updateTopicBroadcast updateTopic)
-        (updateTopicLogEvents updateTopic)
-        now
+        (dbTopicId t)
+        (dbTopicBroadcast t)
+        (dbTopicLogEvents t)
+        (dbTopicCreated t)
+        (dbTopicLastEventId t)
   where
   db = unStateDatabase state
-  dbTopic =
-    DBTopic topic (updateTopicBroadcast updateTopic) (updateTopicLogEvents updateTopic)
+  dbTopic timestamp =
+    DBTopic
+      topic
+      (updateTopicBroadcast updateTopic)
+      (updateTopicLogEvents updateTopic)
+      timestamp
+      Nothing
 updateTopicHandler _ _ _ _ = throwError err401
 
 
@@ -159,7 +168,8 @@ getEventHandler state (Authenticated{}) topic event = do
     Left err -> do
       liftIO $ putStrLn $ "Error querying event: " ++ show err
       throwError err500
-    Right Nothing -> throwError err404
+    Right Nothing ->
+      throwError err404
     Right (Just event') -> do
       return event'
   where
@@ -185,13 +195,14 @@ upsertEventHandler ::
   State -> Auth -> UUID -> UUID -> KM.KeyMap Value -> Handler EventData
 upsertEventHandler state (Authenticated{}) topic event data' = do
   now <- liftIO getCurrentTime
-  let eventData = EventData event topic now data'
-  result <- liftIO $ runUpdate db $ upsertEvent eventData
+  result <- liftIO $ runUpdate db $ addEvent topic event data' now
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error upserting event: " ++ show err
       throwError err500
-    Right _ -> do
+    Right Nothing ->
+      throwError err404
+    Right (Just eventData) -> do
       return eventData
   where
   db = unStateDatabase state
