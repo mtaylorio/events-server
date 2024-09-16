@@ -129,7 +129,7 @@ data DBTopic = DBTopic
 selectTopics :: Statement () [DBTopic]
 selectTopics = Statement sql encoder decoder True
   where
-    sql = "SELECT uuid, broadcast, log_events, created_at FROM topics"
+    sql = "SELECT uuid, broadcast, log_events, created_at, last_event_uuid FROM topics"
     encoder = E.noParams
     decoder = D.rowList topicDecoder
 
@@ -137,7 +137,7 @@ selectTopics = Statement sql encoder decoder True
 selectTopic :: Statement UUID (Maybe DBTopic)
 selectTopic = Statement sql encoder decoder True
   where
-    sql = "SELECT uuid, broadcast, log_events, created_at FROM topics WHERE uuid = $1"
+    sql = "SELECT uuid, broadcast, log_events, created_at, last_event_uuid FROM topics WHERE uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
     decoder = D.rowMaybe topicDecoder
 
@@ -210,7 +210,7 @@ insertOnConflictUpdateTopic :: Statement DBTopic ()
 insertOnConflictUpdateTopic = Statement sql encoder decoder True
   where
     sql = "INSERT INTO topics \
-          \  (uuid, broadcast, log_events, created_at) \
+          \  (uuid, broadcast, log_events, created_at, last_event_uuid) \
           \  VALUES ($1, $2, $3, $4) \
           \  ON CONFLICT (uuid) DO UPDATE SET \
           \  broadcast = EXCLUDED.broadcast, \
@@ -270,7 +270,8 @@ topicEncoder =
   (dbTopicId >$< E.param (E.nonNullable E.uuid)) <>
   (dbTopicBroadcast >$< E.param (E.nonNullable E.bool)) <>
   (dbTopicLogEvents >$< E.param (E.nonNullable E.bool)) <>
-  (dbTopicCreated >$< E.param (E.nonNullable E.timestamptz))
+  (dbTopicCreated >$< E.param (E.nonNullable E.timestamptz)) <>
+  (dbTopicLastEventId >$< E.param (E.nullable E.uuid))
 
 
 uuidBoolEncoder :: E.Params (UUID, Bool)
