@@ -18,8 +18,13 @@ import API.Helpers
 import Client
 import DB
 import Event
+import Health
 import Server.Auth
 import State
+
+
+healthHandler :: State -> Handler HealthResponse
+healthHandler _ = return $ HealthResponse Healthy
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse

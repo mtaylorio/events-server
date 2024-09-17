@@ -12,7 +12,13 @@ import State
 
 
 server :: State -> Server API
-server state auth
+server state
+  = healthHandler state
+  :<|> secureServer state
+
+
+secureServer :: State -> Server SecureAPI
+secureServer state auth
   = sessionsServer state auth
   :<|> topicsServer state auth
 

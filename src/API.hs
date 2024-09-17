@@ -15,9 +15,19 @@ import API.Helpers
 import API.Sessions
 import API.Topics
 import Event
+import Health
 
 
 type API
+  = HealthAPI
+  :<|> SecureAPI
+
+
+type HealthAPI
+  = "status" :> Get '[JSON] HealthResponse
+
+
+type SecureAPI
   = AuthProtect "signature-auth" :>
     ( "sessions" :> SessionsAPI
   :<|> "topics" :> TopicsAPI
