@@ -106,7 +106,19 @@ deleteTopic topicId = do
 
 
 deleteEvent :: UUID -> UUID -> Transaction ()
-deleteEvent topicId eventId = statement (topicId, eventId) deleteEvent'
+deleteEvent topicId eventId = do
+  maybeEvent <- statement (topicId, eventId) selectEvent
+  maybeTopic <- statement topicId selectTopic
+  case (maybeEvent, maybeTopic) of
+    (Just event, Just topic) -> do
+      -- If the event is the last event in the topic, update the last event id
+      when (Just (unEventId event) == dbTopicLastEventId topic) $
+        statement (topicId, unEventPrev event) updateTopicLastEventId
+      -- Update the next event's prev id
+      statement (topicId, (eventId, unEventPrev event)) updateEventPrevId
+      -- Delete the event
+      statement (topicId, eventId) deleteEvent'
+    (_, _) -> return ()
 
 
 runQuery :: Pool.Pool -> Transaction a -> IO (Either Pool.UsageError a)
@@ -187,6 +199,16 @@ selectTopicLogEvents = Statement sql encoder decoder True
     sql = "SELECT log_events FROM topics WHERE uuid = $1"
     encoder = E.param (E.nonNullable E.uuid)
     decoder = D.rowMaybe (D.column (D.nonNullable D.bool))
+
+
+updateEventPrevId :: Statement (UUID, (UUID, Maybe UUID)) ()
+updateEventPrevId = Statement sql encoder decoder True
+  where
+    sql = "UPDATE events SET prev = $3 WHERE topic_uuid = $1 AND uuid = $2"
+    encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
+              ((fst . snd) >$< E.param (E.nonNullable E.uuid)) <>
+              ((snd . snd) >$< E.param (E.nullable E.uuid))
+    decoder = D.noResult
 
 
 updateTopicLastEventId :: Statement (UUID, Maybe UUID) ()
