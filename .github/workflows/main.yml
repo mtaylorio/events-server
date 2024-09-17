@@ -134,3 +134,11 @@ jobs:
         ./bin/update-repo-tag.sh home/namespaced/mtaylor-io events-mtaylor-io ${tag}
         git commit -a -m "Update events-mtaylor-io to ${tag}"
         git push origin main
+    - name: "Sync argocd"
+      shell: "bash"
+      env:
+        ARGOCD_SERVER: "argocd.mtaylor.io"
+        ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+      run: |
+        set -euxo pipefail
+        argocd app sync argocd/mtaylor-io --grpc-web
