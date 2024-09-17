@@ -13,8 +13,8 @@ import State
 
 server :: State -> Server API
 server state
-  = healthHandler state
-  :<|> secureServer state
+  = secureServer state
+  :<|> healthHandler state
 
 
 secureServer :: State -> Server SecureAPI

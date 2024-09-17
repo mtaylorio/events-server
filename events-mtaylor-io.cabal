@@ -34,7 +34,6 @@ library
       Config
       DB
       Event
-      Health
       Microseconds
       Server
       Server.API
@@ -48,7 +47,9 @@ library
       Socket.Auth
       Socket.Handlers
       State
+      Status
       Topic
+      Version
   other-modules:
       Paths_events_mtaylor_io
   autogen-modules:

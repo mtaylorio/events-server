@@ -18,13 +18,14 @@ import API.Helpers
 import Client
 import DB
 import Event
-import Health
 import Server.Auth
 import State
+import Status (Health(Healthy), StatusResponse(StatusResponse))
+import Version (version)
 
 
-healthHandler :: State -> Handler HealthResponse
-healthHandler _ = return $ HealthResponse Healthy
+healthHandler :: State -> Handler StatusResponse
+healthHandler _ = return $ StatusResponse Healthy version
 
 
 sessionsHandler :: State -> Auth -> Handler SessionsResponse

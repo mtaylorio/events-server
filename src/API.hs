@@ -15,16 +15,16 @@ import API.Helpers
 import API.Sessions
 import API.Topics
 import Event
-import Health
+import Status
 
 
 type API
-  = HealthAPI
-  :<|> SecureAPI
+  = SecureAPI
+  :<|> StatusAPI
 
 
-type HealthAPI
-  = "status" :> Get '[JSON] HealthResponse
+type StatusAPI
+  = "status" :> Get '[JSON] StatusResponse
 
 
 type SecureAPI
