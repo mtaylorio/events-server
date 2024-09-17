@@ -8,7 +8,7 @@ jobs:
     name: Assign Version
     runs-on: events-mtaylor-io-runner-k8s
     container:
-      image: images.home.mtaylor.io/deployer:0.0.7
+      image: images.home.mtaylor.io/deployer:0.0.9
     outputs:
       tag: ${{ steps.version.outputs.tag }}
     steps:
@@ -48,7 +48,7 @@ jobs:
     needs: "stack-build"
     runs-on: "events-mtaylor-io-runner-k8s"
     container:
-      image: "images.home.mtaylor.io/deployer:0.0.7"
+      image: "images.home.mtaylor.io/deployer:0.0.9"
     outputs:
       sha: "${{ steps.tag.outputs.sha }}"
       tag: "${{ needs.stack-build.outputs.tag }}"
@@ -110,7 +110,7 @@ jobs:
     environment: "production"
     runs-on: "events-mtaylor-io-runner-k8s"
     container:
-      image: "images.home.mtaylor.io/deployer:0.0.7"
+      image: "images.home.mtaylor.io/deployer:0.0.9"
     needs:
     - "docker-build"
     steps:
