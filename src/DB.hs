@@ -214,7 +214,7 @@ updateEventPrevId = Statement sql encoder decoder True
 updateTopicLastEventId :: Statement (UUID, Maybe UUID) ()
 updateTopicLastEventId = Statement sql encoder decoder True
   where
-    sql = "UPDATE topics SET last_event_id = $2 WHERE uuid = $1"
+    sql = "UPDATE topics SET last_event_uuid = $2 WHERE uuid = $1"
     encoder = (fst >$< E.param (E.nonNullable E.uuid)) <>
               (snd >$< E.param (E.nullable E.uuid))
     decoder = D.noResult
