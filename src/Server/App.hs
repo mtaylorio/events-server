@@ -30,6 +30,6 @@ app state req respond' =
     application :: Wai.Application
     application = serveWithContext apiProxy authContext' (server state)
     authContext' :: Context '[AuthHandler Request Auth]
-    authContext' = authContext configHost' (unStateClientEnv state)
+    authContext' = authContext configHost' (unStateIAMClient state)
     configHost' = configHost $ unStateConfig state
     handler = websocketHandler state

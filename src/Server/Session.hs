@@ -7,7 +7,6 @@ import Data.Text (unpack)
 import Data.UUID (toText)
 import System.Environment
 import System.IO
-import qualified Servant.Client as SC
 
 import IAM.Client
 import IAM.Session
@@ -21,7 +20,7 @@ runSessionManager state = do
   let sessionsClient = mkCallerSessionsClient
   let createSession' = IAM.Client.createSession sessionsClient
 
-  result <- SC.runClientM createSession' (unStateClientEnv state)
+  result <- iamRequest (unStateIAMClient state) createSession'
   case result of
     Left err -> do
       putStrLn $ "Error creating session: " ++ show err
@@ -44,7 +43,7 @@ sessionRefreshLoop state session = do
   let sessionClient' = userSessionClient sessionsClient $ sessionId session
   let refreshSession' = IAM.Client.refreshSession sessionClient'
 
-  result <- SC.runClientM refreshSession' (unStateClientEnv state)
+  result <- iamRequest (unStateIAMClient state) refreshSession'
   case result of
     Left err -> do
       putStrLn $ "Error refreshing session: " ++ show err

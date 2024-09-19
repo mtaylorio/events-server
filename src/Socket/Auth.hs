@@ -7,7 +7,6 @@ import Control.Monad.IO.Class
 import Data.Text
 import Data.UUID
 import System.IO
-import qualified Servant.Client as SC
 
 import IAM.Authorization
 import IAM.Client
@@ -33,7 +32,7 @@ authorizeTopicEvent state client action topicId eventId =
 
 authorizeTopicResource :: State -> Client -> Action -> Text -> IO Bool
 authorizeTopicResource state client action resource = do
-  result <- liftIO $ SC.runClientM (authorizeClient authRequest) clientEnv
+  result <- liftIO $ iamRequest (unStateIAMClient state) (authorizeClient authRequest)
   case result of
     Left err -> do
       hPutStrLn stderr $ "Authorization failed: " <> show err
@@ -52,9 +51,6 @@ authorizeTopicResource state client action resource = do
     , authorizationRequestResource = resource
     , authorizationRequestToken = Just token
     }
-
-  clientEnv :: SC.ClientEnv
-  clientEnv = unStateClientEnv state
 
   host :: Text
   host = configHost $ unStateConfig state

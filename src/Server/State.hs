@@ -10,26 +10,26 @@ import Control.Concurrent.STM
 import Data.Map.Strict
 import Data.UUID (UUID)
 import qualified Hasql.Pool as Pool
-import qualified Servant.Client as SC
 
 import Config
 import Event
+import IAM.Client (IAMClient)
 import Server.Client
 import Topic
 
 
 data State = State
   { unStateConfig :: !Config
-  , unStateClientEnv :: !SC.ClientEnv
+  , unStateIAMClient :: !IAMClient
   , unStateDatabase :: !Pool.Pool
   , unStateClients :: !(TVar (Map UUID (TVar Client)))
   , unStateTopics :: !(TopicManager UUID EventWrapper)
   }
 
 
-initState :: Config -> SC.ClientEnv -> Pool.Pool -> STM State
-initState conf clientEnv db =
-  State conf clientEnv db <$> newTVar empty <*> createTopicManager
+initState :: Config -> IAMClient -> Pool.Pool -> STM State
+initState conf iamClient db =
+  State conf iamClient db <$> newTVar empty <*> createTopicManager
 
 
 insertClient :: State -> Client -> STM (TVar Client)

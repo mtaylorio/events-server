@@ -19,7 +19,6 @@ import Servant
 import Servant.Server.Experimental.Auth
 import System.IO
 import qualified Data.ByteString
-import qualified Servant.Client as SC
 
 import IAM.Authentication
 import IAM.Authorization
@@ -48,13 +47,13 @@ data AuthHeaders = AuthHeaders
 type instance AuthServerData (AuthProtect "signature-auth") = Auth
 
 
-authContext :: Text -> SC.ClientEnv -> Context (AuthHandler Request Auth ': '[])
-authContext host clientEnv = authHandler host clientEnv :. EmptyContext
+authContext :: Text -> IAMClient -> Context (AuthHandler Request Auth ': '[])
+authContext host iamClient = authHandler host iamClient :. EmptyContext
 
 
 
-authHandler :: Text -> SC.ClientEnv -> AuthHandler Request Auth
-authHandler host clientEnv = mkAuthHandler handler where
+authHandler :: Text -> IAMClient -> AuthHandler Request Auth
+authHandler host iamClient = mkAuthHandler handler where
   authenticate :: Request -> Handler (Either Auth (SockAddr, AuthHeaders))
   authenticate req = do
     let addr = remoteHost req
@@ -87,7 +86,7 @@ authHandler host clientEnv = mkAuthHandler handler where
           , authorizationRequestResource = decodeUtf8 $ rawPathInfo req
           , authorizationRequestToken = Just $ unAuthHeadersToken headers
           }
-    result <- liftIO $ SC.runClientM (authorizeClient auth) clientEnv
+    result <- liftIO $ iamRequest iamClient (authorizeClient auth)
     case result of
       Right (AuthorizationResponse Allow) ->
         return $ Authenticated addr headers user
@@ -105,7 +104,7 @@ authHandler host clientEnv = mkAuthHandler handler where
       Right (addr, headers) -> do
         let uident = userIdentifierFromText $ unAuthHeadersUser headers
             userClient = mkUserClient uident
-        userResult <- liftIO $ SC.runClientM (getUser userClient) clientEnv
+        userResult <- liftIO $ iamRequest iamClient (getUser userClient)
         case userResult of
           Left e -> do
             liftIO $ putStrLn "Get user failed"
