@@ -58,7 +58,6 @@ library
     , bytestring
     , containers
     , ed25519
-    , events-core
     , hasql
     , hasql-migration
     , hasql-pool
@@ -67,6 +66,7 @@ library
     , http-client-tls
     , http-types
     , lens
+    , mtaylor-io-events-core
     , mtaylor-io-iam-client
     , mtaylor-io-iam-core
     , mtl
@@ -102,7 +102,6 @@ executable events-mtaylor-io
     , bytestring
     , containers
     , ed25519
-    , events-core
     , hasql
     , hasql-migration
     , hasql-pool
@@ -111,6 +110,7 @@ executable events-mtaylor-io
     , http-client-tls
     , http-types
     , lens
+    , mtaylor-io-events-core
     , mtaylor-io-events-server
     , mtaylor-io-iam-client
     , mtaylor-io-iam-core
@@ -148,7 +148,6 @@ test-suite events-mtaylor-io-test
     , bytestring
     , containers
     , ed25519
-    , events-core
     , hasql
     , hasql-migration
     , hasql-pool
@@ -157,6 +156,7 @@ test-suite events-mtaylor-io-test
     , http-client-tls
     , http-types
     , lens
+    , mtaylor-io-events-core
     , mtaylor-io-events-server
     , mtaylor-io-iam-client
     , mtaylor-io-iam-core
