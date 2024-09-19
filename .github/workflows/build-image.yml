@@ -1,0 +1,29 @@
+name: Build Image
+on:
+  schedule:
+  # Weekly on Sunday at 00:00
+  - cron: "0 0 * * 0"
+jobs:
+  build-image:
+    name: "Docker Build Image"
+    runs-on: "mtaylorio-runners-dind"
+    steps:
+    - name: "Set up Docker Buildx"
+      uses: "docker/setup-buildx-action@v3"
+    - name: "Checkout"
+      uses: "actions/checkout@v4"
+    - id: "meta"
+      name: "Docker Metadata"
+      uses: "docker/metadata-action@v5"
+      with:
+        images: "images.home.mtaylor.io/events-mtaylor-io"
+        tags: |
+          build
+    - name: "Docker Build"
+      uses: "docker/build-push-action@v6"
+      with:
+        push: true
+        context: "."
+        file: "Dockerfile.build"
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
