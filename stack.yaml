@@ -41,10 +41,10 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- git: https://github.com/mtaylor91/iam-mtaylor-io-client.git
-  commit: 07a8f0dd9e1316c0c034e8744ad2fedbfb3bdaaa
-- git: https://github.com/mtaylor91/iam-mtaylor-io-core.git
-  commit: b0d095c2376fdbf93a8e789d55cc0bd6a1c14919
+- git: https://github.com/mtaylorio/iam-client-haskell.git
+  commit: 2b04e8c0436b9a045c1d5cdf6409c219625bd8c0
+- git: https://github.com/mtaylorio/iam-core.git
+  commit: 32956ae3c5f9a54cb0b5016d94399b147d7f51db
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

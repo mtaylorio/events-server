@@ -41,7 +41,7 @@ runSessionManager state = do
 sessionRefreshLoop :: State -> Session -> IO ()
 sessionRefreshLoop state session = do
   let sessionsClient = mkCallerSessionsClient
-  let sessionClient' = sessionClient sessionsClient $ sessionId session
+  let sessionClient' = userSessionClient sessionsClient $ sessionId session
   let refreshSession' = IAM.Client.refreshSession sessionClient'
 
   result <- SC.runClientM refreshSession' (unStateClientEnv state)

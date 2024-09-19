@@ -6,7 +6,7 @@ on:
 jobs:
   version:
     name: Assign Version
-    runs-on: events-mtaylor-io-runner-k8s
+    runs-on: mtaylorio-runners-k8s
     container:
       image: images.home.mtaylor.io/deployer:0.0.9
     outputs:
@@ -25,7 +25,7 @@ jobs:
   stack-build:
     name: Stack Build
     needs: version
-    runs-on: events-mtaylor-io-runner-k8s
+    runs-on: mtaylorio-runners-k8s
     container:
       image: "images.home.mtaylor.io/events-mtaylor-io:build"
     outputs:
@@ -46,7 +46,7 @@ jobs:
   git-tag:
     name: "Git Tag"
     needs: "stack-build"
-    runs-on: "events-mtaylor-io-runner-k8s"
+    runs-on: "mtaylorio-runners-k8s"
     container:
       image: "images.home.mtaylor.io/deployer:0.0.9"
     outputs:
@@ -71,7 +71,7 @@ jobs:
   docker-build:
     name: "Docker Build"
     needs: "git-tag"
-    runs-on: "events-mtaylor-io-runner-dind"
+    runs-on: "mtaylorio-runners-dind"
     outputs:
       sha: "${{ needs.git-tag.outputs.sha }}"
       tag: "${{ needs.git-tag.outputs.tag }}"
@@ -108,7 +108,7 @@ jobs:
   release:
     name: "Release"
     environment: "production"
-    runs-on: "events-mtaylor-io-runner-k8s"
+    runs-on: "mtaylorio-runners-k8s"
     container:
       image: "images.home.mtaylor.io/deployer:0.0.9"
     needs:
@@ -130,8 +130,10 @@ jobs:
       shell: "bash"
       run: |
         set -euxo pipefail
+        path=home/namespaced/mtaylor-io
         tag=${{ needs.docker-build.outputs.tag }}
-        ./bin/update-repo-tag.sh home/namespaced/mtaylor-io events-mtaylor-io ${tag}
+        repo=https://github.com/mtaylorio/events-server
+        ./bin/update-repo-tag.sh ${path} ${repo} ${tag}
         git commit -a -m "Update events-mtaylor-io to ${tag}"
         git push origin main
     - name: "Sync argocd"
