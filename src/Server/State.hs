@@ -1,4 +1,4 @@
-module State
+module Server.State
   ( State(..)
   , initState
   , insertClient
@@ -12,9 +12,9 @@ import Data.UUID (UUID)
 import qualified Hasql.Pool as Pool
 import qualified Servant.Client as SC
 
-import Client
 import Config
 import Event
+import Server.Client
 import Topic
 
 

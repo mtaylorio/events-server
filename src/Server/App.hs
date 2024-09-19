@@ -15,8 +15,8 @@ import API
 import Config
 import Server.API
 import Server.Auth
+import Server.State
 import Socket (websocketHandler)
-import State
 
 
 app :: State -> Wai.Application

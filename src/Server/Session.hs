@@ -13,7 +13,7 @@ import IAM.Client
 import IAM.Session
 
 import Microseconds
-import State
+import Server.State
 
 
 runSessionManager :: State -> IO ()

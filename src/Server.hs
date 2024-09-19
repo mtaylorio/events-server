@@ -19,7 +19,7 @@ import DB (connectToDatabase)
 import Server.App
 import Server.Migrations
 import Server.Session
-import State
+import Server.State
 
 
 runServer :: Config -> IO ()

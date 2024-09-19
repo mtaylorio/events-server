@@ -14,9 +14,9 @@ import IAM.Client
 import IAM.Policy (Action(..), Effect(..))
 import IAM.UserIdentifier
 
-import Client
 import Config
-import State
+import Server.Client
+import Server.State
 
 
 authorizeTopic :: State -> Client -> Action -> UUID -> IO Bool

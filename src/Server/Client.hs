@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Client
+module Server.Client
   ( newClient
   , disconnected
   , addSubscription

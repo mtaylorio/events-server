@@ -8,8 +8,8 @@ import Hasql.Transaction.Sessions
 import qualified Hasql.Pool as Pool
 
 import DB
-import State
 import Topic
+import Server.State
 
 
 initServer :: State -> IO ()

@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Client
       Command
       Config
       DB
@@ -34,14 +33,15 @@ library
       Server.API
       Server.App
       Server.Auth
+      Server.Client
       Server.Handlers
       Server.Init
       Server.Migrations
       Server.Session
+      Server.State
       Socket
       Socket.Auth
       Socket.Handlers
-      State
       Topic
       Version
   other-modules:

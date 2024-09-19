@@ -10,11 +10,11 @@ import qualified Network.WebSockets as WS
 
 import IAM.Policy (Action(..))
 
-import Client
 import DB
 import Event
+import Server.Client
+import Server.State
 import Socket.Auth
-import State
 import Topic
 
 

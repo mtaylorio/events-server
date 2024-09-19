@@ -8,7 +8,7 @@ import Servant
 import API
 import Server.Auth
 import Server.Handlers
-import State
+import Server.State
 
 
 server :: State -> Server API

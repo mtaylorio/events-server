@@ -9,10 +9,10 @@ import Data.Aeson
 import System.IO
 import qualified Network.WebSockets as WS
 
-import Client
 import Event
+import Server.Client
+import Server.State
 import Socket.Handlers
-import State
 
 
 websocketHandler :: State -> WS.PendingConnection -> IO ()

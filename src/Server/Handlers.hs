@@ -15,11 +15,11 @@ import qualified Data.Map as Map
 
 import API
 import API.Helpers
-import Client
 import DB
 import Event
 import Server.Auth
-import State
+import Server.Client
+import Server.State
 import Status (Health(Healthy), StatusResponse(StatusResponse))
 import Version (version)
 
