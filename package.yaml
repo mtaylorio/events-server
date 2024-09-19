@@ -26,6 +26,7 @@ dependencies:
 - bytestring
 - containers
 - ed25519
+- events-core
 - hasql
 - hasql-migration
 - hasql-pool

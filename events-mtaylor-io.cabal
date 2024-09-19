@@ -25,15 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      API
-      API.Helpers
-      API.Sessions
-      API.Topics
       Client
       Command
       Config
       DB
-      Event
       Microseconds
       Server
       Server.API
@@ -47,7 +42,6 @@ library
       Socket.Auth
       Socket.Handlers
       State
-      Status
       Topic
       Version
   other-modules:
@@ -64,6 +58,7 @@ library
     , bytestring
     , containers
     , ed25519
+    , events-core
     , hasql
     , hasql-migration
     , hasql-pool
@@ -107,6 +102,7 @@ executable events-mtaylor-io
     , bytestring
     , containers
     , ed25519
+    , events-core
     , events-mtaylor-io
     , hasql
     , hasql-migration
@@ -152,6 +148,7 @@ test-suite events-mtaylor-io-test
     , bytestring
     , containers
     , ed25519
+    , events-core
     , events-mtaylor-io
     , hasql
     , hasql-migration

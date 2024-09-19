@@ -5,6 +5,17 @@
 
 packages:
 - completed:
+    commit: 4a422fa580608d5feb361b7e6a555a0d063e77ee
+    git: https://github.com/mtaylorio/events-core.git
+    name: events-core
+    pantry-tree:
+      sha256: 2198bd36fe8e00389d828f50b200bd87d9f063f9e72963f37e1fa070b925d90b
+      size: 846
+    version: 0.1.0.0
+  original:
+    commit: 4a422fa580608d5feb361b7e6a555a0d063e77ee
+    git: https://github.com/mtaylorio/events-core.git
+- completed:
     commit: 2b04e8c0436b9a045c1d5cdf6409c219625bd8c0
     git: https://github.com/mtaylorio/iam-client-haskell.git
     name: iam-mtaylor-io-client
