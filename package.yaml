@@ -1,6 +1,6 @@
-name:                events-mtaylor-io
+name:                mtaylor-io-events-server
 version:             0.1.0.0
-github:              "mtaylor91/events-mtaylor-io"
+github:              "mtaylorio/events-server"
 license:             BSD-3-Clause
 author:              "Mike Taylor"
 maintainer:          "mike.charles.taylor@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/mtaylor91/events-mtaylor-io#readme>
+description:         Please see the README on GitHub at <https://github.com/mtaylorio/events-server#readme>
 
 dependencies:
 - aeson
@@ -34,9 +34,9 @@ dependencies:
 - http-client
 - http-client-tls
 - http-types
-- iam-mtaylor-io-client
-- iam-mtaylor-io-core
 - lens
+- mtaylor-io-iam-client
+- mtaylor-io-iam-core
 - mtl
 - network
 - optparse-applicative
@@ -76,7 +76,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - events-mtaylor-io
+    - mtaylor-io-events-server
 
 tests:
   events-mtaylor-io-test:
@@ -87,4 +87,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - events-mtaylor-io
+    - mtaylor-io-events-server

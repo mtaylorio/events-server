@@ -4,11 +4,11 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           events-mtaylor-io
+name:           mtaylor-io-events-server
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/mtaylor91/events-mtaylor-io#readme>
-homepage:       https://github.com/mtaylor91/events-mtaylor-io#readme
-bug-reports:    https://github.com/mtaylor91/events-mtaylor-io/issues
+description:    Please see the README on GitHub at <https://github.com/mtaylorio/events-server#readme>
+homepage:       https://github.com/mtaylorio/events-server#readme
+bug-reports:    https://github.com/mtaylorio/events-server/issues
 author:         Mike Taylor
 maintainer:     mike.charles.taylor@gmail.com
 copyright:      Copyright (c) 2024
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/mtaylor91/events-mtaylor-io
+  location: https://github.com/mtaylorio/events-server
 
 library
   exposed-modules:
@@ -45,9 +45,9 @@ library
       Topic
       Version
   other-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   autogen-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -66,9 +66,9 @@ library
     , http-client
     , http-client-tls
     , http-types
-    , iam-mtaylor-io-client
-    , iam-mtaylor-io-core
     , lens
+    , mtaylor-io-iam-client
+    , mtaylor-io-iam-core
     , mtl
     , network
     , optparse-applicative
@@ -89,9 +89,9 @@ library
 executable events-mtaylor-io
   main-is: Main.hs
   other-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   autogen-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -103,7 +103,6 @@ executable events-mtaylor-io
     , containers
     , ed25519
     , events-core
-    , events-mtaylor-io
     , hasql
     , hasql-migration
     , hasql-pool
@@ -111,9 +110,10 @@ executable events-mtaylor-io
     , http-client
     , http-client-tls
     , http-types
-    , iam-mtaylor-io-client
-    , iam-mtaylor-io-core
     , lens
+    , mtaylor-io-events-server
+    , mtaylor-io-iam-client
+    , mtaylor-io-iam-core
     , mtl
     , network
     , optparse-applicative
@@ -135,9 +135,9 @@ test-suite events-mtaylor-io-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   autogen-modules:
-      Paths_events_mtaylor_io
+      Paths_mtaylor_io_events_server
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -149,7 +149,6 @@ test-suite events-mtaylor-io-test
     , containers
     , ed25519
     , events-core
-    , events-mtaylor-io
     , hasql
     , hasql-migration
     , hasql-pool
@@ -157,9 +156,10 @@ test-suite events-mtaylor-io-test
     , http-client
     , http-client-tls
     , http-types
-    , iam-mtaylor-io-client
-    , iam-mtaylor-io-core
     , lens
+    , mtaylor-io-events-server
+    , mtaylor-io-iam-client
+    , mtaylor-io-iam-core
     , mtl
     , network
     , optparse-applicative
