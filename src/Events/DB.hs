@@ -233,7 +233,7 @@ insertOnConflictUpdateTopic = Statement sql encoder decoder True
   where
     sql = "INSERT INTO topics \
           \  (uuid, broadcast, log_events, created_at, last_event_uuid) \
-          \  VALUES ($1, $2, $3, $4) \
+          \  VALUES ($1, $2, $3, $4, $5) \
           \  ON CONFLICT (uuid) DO UPDATE SET \
           \  broadcast = EXCLUDED.broadcast, \
           \  log_events = EXCLUDED.log_events"
