@@ -3,9 +3,6 @@ module Events.Server.Session
   ) where
 
 import Control.Concurrent (threadDelay)
-import Data.Text (unpack)
-import Data.UUID (toText)
-import System.Environment
 import System.IO
 
 import IAM.Client
@@ -28,10 +25,8 @@ runSessionManager state = do
       threadDelay $ 15 * second
       runSessionManager state
     Right session -> do
-      let sid = createSessionId session
       let token = createSessionToken session
-      setEnv "MTAYLOR_IO_SESSION_ID" $ unpack $ toText $ unSessionId sid
-      setEnv "MTAYLOR_IO_SESSION_TOKEN" $ unpack token
+      setSessionToken (unStateIAMClient state) $ Just token
       putStrLn "Created session"
       hFlush stdout
       sessionRefreshLoop state $ toSession session
