@@ -25,25 +25,25 @@ source-repository head
 
 library
   exposed-modules:
-      Command
-      Config
-      DB
-      Microseconds
-      Server
-      Server.API
-      Server.App
-      Server.Auth
-      Server.Client
-      Server.Handlers
-      Server.Init
-      Server.Migrations
-      Server.Session
-      Server.State
-      Socket
-      Socket.Auth
-      Socket.Handlers
-      Topic
-      Version
+      Events.Config
+      Events.DB
+      Events.Microseconds
+      Events.Server
+      Events.Server.API
+      Events.Server.App
+      Events.Server.Auth
+      Events.Server.Client
+      Events.Server.Command
+      Events.Server.Handlers
+      Events.Server.Init
+      Events.Server.Migrations
+      Events.Server.Session
+      Events.Server.State
+      Events.Server.Version
+      Events.Socket
+      Events.Socket.Auth
+      Events.Socket.Handlers
+      Events.Topic
   other-modules:
       Paths_mtaylor_io_events_server
   autogen-modules:

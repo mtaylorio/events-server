@@ -1,4 +1,4 @@
-module Server.Init
+module Events.Server.Init
   ( initServer
   ) where
 
@@ -7,9 +7,9 @@ import Hasql.Transaction
 import Hasql.Transaction.Sessions
 import qualified Hasql.Pool as Pool
 
-import DB
-import Topic
-import Server.State
+import Events.DB
+import Events.Topic
+import Events.Server.State
 
 
 initServer :: State -> IO ()

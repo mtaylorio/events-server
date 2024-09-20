@@ -2,8 +2,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Server.Auth
-  ( module Server.Auth
+module Events.Server.Auth
+  ( module Events.Server.Auth
   ) where
 
 import Control.Monad.IO.Class (liftIO)

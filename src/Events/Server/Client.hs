@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Server.Client
+module Events.Server.Client
   ( newClient
   , disconnected
   , addSubscription
@@ -14,7 +14,7 @@ import Data.Text (Text)
 import Data.UUID (UUID)
 import qualified Network.WebSockets as WS
 
-import Topic
+import Events.Topic
 
 
 data Client = Client

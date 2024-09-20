@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Config
-  ( module Config
+module Events.Config
+  ( module Events.Config
   ) where
 
 import Data.Text

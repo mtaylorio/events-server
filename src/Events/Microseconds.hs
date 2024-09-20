@@ -1,5 +1,5 @@
-module Microseconds
-  ( module Microseconds
+module Events.Microseconds
+  ( module Events.Microseconds
   ) where
 
 

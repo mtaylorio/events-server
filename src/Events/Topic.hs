@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-module Topic
+module Events.Topic
   ( createBroadcastTopic
   , createSendReceiveTopic
   , createTopicManager

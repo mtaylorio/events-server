@@ -1,4 +1,4 @@
-module Server.State
+module Events.Server.State
   ( State(..)
   , initState
   , insertClient
@@ -11,11 +11,12 @@ import Data.Map.Strict
 import Data.UUID (UUID)
 import qualified Hasql.Pool as Pool
 
-import Config
-import Event
 import IAM.Client (IAMClient)
-import Server.Client
-import Topic
+
+import Events.Config
+import Events.Event
+import Events.Server.Client
+import Events.Topic
 
 
 data State = State

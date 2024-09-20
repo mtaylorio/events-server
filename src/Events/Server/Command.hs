@@ -1,12 +1,11 @@
-module Command
+module Events.Server.Command
   ( run
   ) where
 
 import Options.Applicative
 
-import Server (runServer)
-
-import Config
+import Events.Config
+import Events.Server (runServer)
 
 
 newtype Command = Server ConfigOpts deriving (Show)

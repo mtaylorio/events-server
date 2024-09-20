@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-module DB
-  ( module DB
+module Events.DB
+  ( module Events.DB
   ) where
 
 import Control.Monad (when)
@@ -20,8 +20,8 @@ import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
 import qualified Hasql.Pool as Pool
 
-import Config (ConfigPostgres(..))
-import Event
+import Events.Config (ConfigPostgres(..))
+import Events.Event
 
 
 connectToDatabase :: ConfigPostgres -> IO Pool.Pool

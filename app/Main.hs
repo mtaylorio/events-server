@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Command
+import Events.Server.Command
 
 main :: IO ()
 main = run

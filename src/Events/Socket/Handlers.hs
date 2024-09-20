@@ -1,5 +1,5 @@
-module Socket.Handlers
-  ( module Socket.Handlers
+module Events.Socket.Handlers
+  ( module Events.Socket.Handlers
   ) where
 
 import Control.Concurrent.STM
@@ -10,12 +10,12 @@ import qualified Network.WebSockets as WS
 
 import IAM.Policy (Action(..))
 
-import DB
-import Event
-import Server.Client
-import Server.State
-import Socket.Auth
-import Topic
+import Events.DB
+import Events.Event
+import Events.Server.Client
+import Events.Server.State
+import Events.Socket.Auth
+import Events.Topic
 
 
 authFailedMsg :: String -> Client -> UUID -> String

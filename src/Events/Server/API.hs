@@ -1,14 +1,14 @@
-module Server.API
-  ( module Server.API
+module Events.Server.API
+  ( module Events.Server.API
   ) where
 
 import Data.UUID
 import Servant
 
-import API
-import Server.Auth
-import Server.Handlers
-import Server.State
+import Events.API
+import Events.Server.Auth
+import Events.Server.Handlers
+import Events.Server.State
 
 
 server :: State -> Server API

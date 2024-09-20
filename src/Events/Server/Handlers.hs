@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Server.Handlers
-  ( module Server.Handlers
+module Events.Server.Handlers
+  ( module Events.Server.Handlers
   ) where
 
 import Control.Concurrent.STM
@@ -13,15 +13,15 @@ import Servant
 import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Map as Map
 
-import API
-import API.Helpers
-import DB
-import Event
-import Server.Auth
-import Server.Client
-import Server.State
-import Status (Health(Healthy), StatusResponse(StatusResponse))
-import Version (version)
+import Events.API
+import Events.API.Helpers
+import Events.DB
+import Events.Event
+import Events.Server.Auth
+import Events.Server.Client
+import Events.Server.State
+import Events.Server.Version (version)
+import Events.Status (Health(Healthy), StatusResponse(StatusResponse))
 
 
 healthHandler :: State -> Handler StatusResponse

@@ -1,4 +1,4 @@
-module Server.Session
+module Events.Server.Session
   ( runSessionManager
   ) where
 
@@ -11,8 +11,8 @@ import System.IO
 import IAM.Client
 import IAM.Session
 
-import Microseconds
-import Server.State
+import Events.Microseconds
+import Events.Server.State
 
 
 runSessionManager :: State -> IO ()

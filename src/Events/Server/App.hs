@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Server.App
+module Events.Server.App
   ( app
   ) where
 
@@ -11,12 +11,12 @@ import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.WebSockets as WaiWS
 import qualified Network.WebSockets as WS
 
-import API
-import Config
-import Server.API
-import Server.Auth
-import Server.State
-import Socket (websocketHandler)
+import Events.API
+import Events.Config
+import Events.Server.API
+import Events.Server.Auth
+import Events.Server.State
+import Events.Socket (websocketHandler)
 
 
 app :: State -> Wai.Application

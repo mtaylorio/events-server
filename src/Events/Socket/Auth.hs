@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Socket.Auth
-  ( module Socket.Auth
+module Events.Socket.Auth
+  ( module Events.Socket.Auth
   ) where
 
 import Control.Monad.IO.Class
@@ -13,9 +13,9 @@ import IAM.Client
 import IAM.Policy (Action(..), Effect(..))
 import IAM.UserIdentifier
 
-import Config
-import Server.Client
-import Server.State
+import Events.Config
+import Events.Server.Client
+import Events.Server.State
 
 
 authorizeTopic :: State -> Client -> Action -> UUID -> IO Bool

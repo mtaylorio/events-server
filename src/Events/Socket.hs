@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Socket
+module Events.Socket
   ( websocketHandler
   ) where
 
@@ -9,10 +9,10 @@ import Data.Aeson
 import System.IO
 import qualified Network.WebSockets as WS
 
-import Event
-import Server.Client
-import Server.State
-import Socket.Handlers
+import Events.Event
+import Events.Server.Client
+import Events.Server.State
+import Events.Socket.Handlers
 
 
 websocketHandler :: State -> WS.PendingConnection -> IO ()

@@ -1,4 +1,4 @@
-module Server.Migrations
+module Events.Server.Migrations
   ( runDatabaseMigrations
   ) where
 
