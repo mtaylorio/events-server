@@ -28,7 +28,7 @@ dependencies:
 - ed25519
 - hasql
 - hasql-migration
-- hasql-pool
+- hasql-pool >= 0.9 && < 0.10
 - hasql-transaction
 - http-client
 - http-client-tls
