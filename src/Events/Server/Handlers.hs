@@ -184,15 +184,11 @@ getEventHandler state (Authenticated{}) topic event = do
 getEventHandler _ _ _ _ = throwError err401
 
 
-createEventHandler :: State -> Auth -> UUID -> PublishEvent -> Handler EventData
+createEventHandler :: State -> Auth -> UUID -> KM.KeyMap Value -> Handler EventData
 createEventHandler state (Authenticated{}) topic publishEvent = do
   now <- liftIO getCurrentTime
   eventUUID <- liftIO nextRandom
-  result <- liftIO $ runUpdate db $ addEvent
-    topic
-    eventUUID
-    (publishEventData publishEvent)
-    now
+  result <- liftIO $ runUpdate db $ addEvent topic eventUUID publishEvent now
   case result of
     Left err -> do
       liftIO $ putStrLn $ "Error creating event: " ++ show err
