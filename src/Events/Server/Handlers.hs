@@ -9,6 +9,7 @@ import Data.Aeson
 import Data.Maybe
 import Data.Time.Clock
 import Data.UUID
+import Data.UUID.V4
 import Servant
 import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Map as Map
@@ -183,13 +184,14 @@ getEventHandler state (Authenticated{}) topic event = do
 getEventHandler _ _ _ _ = throwError err401
 
 
-createEventHandler :: State -> Auth -> UUID -> EventData -> Handler EventData
-createEventHandler state (Authenticated{}) topic eventData = do
+createEventHandler :: State -> Auth -> UUID -> PublishEvent -> Handler EventData
+createEventHandler state (Authenticated{}) topic publishEvent = do
   now <- liftIO getCurrentTime
+  eventUUID <- liftIO nextRandom
   result <- liftIO $ runUpdate db $ addEvent
     topic
-    (unEventId eventData)
-    (unEventData eventData)
+    eventUUID
+    (publishEventData publishEvent)
     now
   case result of
     Left err -> do

@@ -42,7 +42,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/mtaylorio/events-core.git
-  commit: deb4b0ff1a009043345fd376d59f9e3df12156da
+  commit: c59be793e18431cd03331bdd6d24331a97284ad7
 - git: https://github.com/mtaylorio/iam-client-haskell.git
   commit: cf49b299a1a09f6f1b0f7d5fd5a5b96e0ccd56c9
 - git: https://github.com/mtaylorio/iam-core.git
