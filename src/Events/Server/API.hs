@@ -47,6 +47,7 @@ topicServer state auth topic
 eventsServer :: State -> Auth -> UUID -> Server EventsAPI
 eventsServer state auth topic
   = listEventsHandler state auth topic
+  :<|> createEventHandler state auth topic
   :<|> eventServer state auth topic
 
 

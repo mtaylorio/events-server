@@ -183,6 +183,27 @@ getEventHandler state (Authenticated{}) topic event = do
 getEventHandler _ _ _ _ = throwError err401
 
 
+createEventHandler :: State -> Auth -> UUID -> EventData -> Handler EventData
+createEventHandler state (Authenticated{}) topic eventData = do
+  now <- liftIO getCurrentTime
+  result <- liftIO $ runUpdate db $ addEvent
+    topic
+    (unEventId eventData)
+    (unEventData eventData)
+    now
+  case result of
+    Left err -> do
+      liftIO $ putStrLn $ "Error creating event: " ++ show err
+      throwError err500
+    Right Nothing ->
+      throwError err404
+    Right (Just eventData') -> do
+      return eventData'
+  where
+  db = unStateDatabase state
+createEventHandler _ _ _ _ = throwError err401
+
+
 deleteEventHandler :: State -> Auth -> UUID -> UUID -> Handler NoContent
 deleteEventHandler state (Authenticated{}) topic event = do
   result <- liftIO $ runUpdate db $ deleteEvent topic event
